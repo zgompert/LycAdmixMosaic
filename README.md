@@ -266,11 +266,13 @@ $pm->wait_all_children;
 ```
 Note that each chromosome (big scaffold) is being processes separately (chrom*list). 
 
+The variant data are in `/uufs/chpc.utah.edu/common/home/gompert-group2/data/Lycaeides_poolSeq/SpecGenomVars`.
+
 # Preliminary analyses based on `bcftools` results
 
 I did some quick, preliminary analyses based on the above calling with `bcftools`. All of this is in /uufs/chpc.utah.edu/common/home/gompert-group2/data/Lycaeides_poolSeq/Variants/.
 
-First, I used `GATK` version (4.1.4.1) for some simple filtering of the variants, keeping only those with mapping quality > 30 and a depth > 1750.
+I filtered the vcf file with `GATK` version (4.1.4.1), keeping only those with mapping quality > 30, depth > 1350 and bias scores less than +- 3. This uses [VarFiltFork2.pl](VarFiltFork2.pl), which is also shown below.
 
 ```perl
 #!/usr/bin/perl
@@ -284,17 +286,18 @@ my $max = 48;
 my $pm = Parallel::ForkManager->new($max);
 
 
-foreach $vcf (@ARGV){
-	$pm->start and next; ## fork
-	$o = $vcf;
-	$o =~ s/o_// or die "failed sub $vcf\n";
-	system "bgzip $vcf\n";
-	system "tabix $vcf.gz\n";
-	system "java -jar /uufs/chpc.utah.edu/sys/installdir/gatk/gatk-4.1.4.1/gatk-package-4.1.4.1-local.jar IndexFeatureFile -I $vcf.gz\n";
-	system "java -jar /uufs/chpc.utah.edu/sys/installdir/gatk/gatk-4.1.4.1/gatk-package-4.1.4.1-local.jar VariantFiltration -R /uufs/chpc.utah.edu/common/home/gompert-group3/data/LmelGenome/Lmel_dovetailPacBio_genome.fasta -V $vcf.gz -O filt_$o.gz --filter-name \"depth\" --filter-expression \"DP < 1750\" --filter-name \"mapping\" --filter-expression \"MQ < 30\"\n";
-	system "bgzip -d filt_$o.gz\n";
+foreach $vcf (@ARGV){ ## takes vcf.gz
+        $pm->start and next; ## fork
+        $o = $vcf;
+        $o =~ s/filt_// or die "failed sub $o\n";
+        $in = "b_$vcf";
+        system "gunzip -c $vcf | bgzip > $in\n";
+        system "tabix $in\n";
+        system "java -jar /uufs/chpc.utah.edu/sys/installdir/gatk/gatk-4.1.4.1/gatk-package-4.1.4.1-local.jar IndexFeatureFile -I $in\n";
+        system "java -jar /uufs/chpc.utah.edu/sys/installdir/gatk/gatk-4.1.4.1/gatk-package-4.1.4.1-local.jar VariantFiltration -R /uufs/chpc.utah.edu/common/home/gompert-group3/data/LmelGenome/Lmel_dovetailPacBio_genome.fasta -V $in -O fff_$o --filter-name \"bqbz\" --filter-expression \"BQBZ > 3.0 || BQBZ < -3.0\" --filter-name \"mqbz\" --filter-expression \"MQBZ > 3.0 || MQBZ < -3.0\" --filter-name \"rpbz\" --filter-expression \"RPBZ > 3.0 || RPBZ < -3.0\" --filter-name \"depth\" --filter-expression \"DP < 1350\" --filter-name \"mapping\" --filter-expression \"MQ < 30\" --verbosity ERROR\n";
+        system "bgzip -d fff_$o\n";
 
-	$pm->finish;
+        $pm->finish;
 
 }
 
@@ -309,7 +312,7 @@ Then I extracted the allele depths from the filtered vcf files,
 # extract allele depth AD from biallelic SNPs that passed filtering 
 #
 
-for f in filt*vcf
+for f in fff*vcf
 do
 	echo "Processing $f"
 	out="$(echo $f | sed -e 's/vcf/txt/')"
@@ -317,7 +320,29 @@ do
 	grep ^Sc $f | grep PASS | grep -v [ATCG],[ATCG] | perl -p -i -e 's/^.+AD\s+//' | perl -p -i -e 's/\S+:(\d+),(\d+)/\1/g' > ad1_$out   
 	grep ^Sc $f | grep PASS | grep -v [ATCG],[ATCG] | perl -p -i -e 's/^.+AD\s+//' | perl -p -i -e 's/\S+:(\d+),(\d+)/\2/g' > ad2_$out
 done
+
 ```
+
 This creates allele depth files for each allele (ad1* and ad2*) and chromosome, which I am using to obtain maximum likelihood allele frequency estimates (this is just the sample frequency... even a beta-binomial model would give the same point estimate with a flat prior). 
 
-These files are now in `/uufs/chpc.utah.edu/common/home/gompert-group4/projects/lyc_specGenomics/GenData`.
+I also grapped the SNP information (alleles):
+
+```bash
+#!/usr/bin/bash
+#
+# extract alleles from biallelic SNPs that passed filtering 
+#
+
+for f in fff*vcf
+do
+	echo "Processing $f"
+	out="$(echo $f | sed -e 's/vcf/txt/')"
+	echo "Output is snps_$out"
+	grep ^Sc $f | grep PASS | grep -v [ATCG],[ATCG] | cut -f 4,5 > snps_$out &   
+done
+```
+
+
+All downstream analyses will be in `/uufs/chpc.utah.edu/common/home/gompert-group5/projects/`.
+
+
