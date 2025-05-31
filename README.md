@@ -340,4 +340,30 @@ All downstream analyses will be in `/uufs/chpc.utah.edu/common/home/gompert-grou
 As a first pass, I summarized patterns of population structure based on allele frequencies for chromosome and sets of chromosomes (autosomes vs Z). My initial analyses, which include some estimates of Fst as well, are in [pcaFst.R](pcaFst.R), wheras code for a summary figure with PCAs for all autosomes vs Z and a map (with a blank spot for a tree) are in [mkPCAfig.R](mkPCAfig.R). Neither is final. I want to pay attention to how exactly I get allele frequeny estiamtes and to any additional filtering for the PCA (e.g., focus on SNPs with some minimal coverage in all populations). This is all in the subdirectory `/uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/GenData`.
 
 # Time-calibrated phylogenetic tree
- 
+
+I am working on a time-calibrated tree of *Lycaeides* with `Beast` (version 2.7.7). I first tried this by sampling a multiplocus haplotype from the allele frequencies (as I am still currently doing for `Caster`, see below), but I think this was inflating the terminal branch lengths. I thus instead decided to generate a consensus sequence for each population, whereby I chose the most common allele for each SNPs. This is all done from the allele depth information and I insert N when fewer than 5 reads were observed. This was done with the [mkBeastDat.R](mkBeastDat.R) script (in `GenData`), which outputs the max_chrom*.fasta alignment files (the script for `Caster` makes similar files without the max). I moved these to the `Beast` subdirectory.
+
+`Beast` cannot handle the full set of SNPs. I thus subset the SNP data from the alignments. This involves first generating a filtered and reduced set of SNPs with [GetSNPSubstMax.R](GetSNPSubstMax.R). I specifically retain 0.025 percent of the SNPs from each chromosome and only those with no missing data (this doesn't quite seem true, check this). Also at this point, I dropped chromsome 21.2 (the small bit that might be part of 21). This outputs the keepSNPs_max_chrom files. I then create the combined (across chromosomes) fasta alignment file with just the subset of SNPs, lyc_genomemax.fasta. This was done with [SubSetFasta.pl](SubSetFasta.pl). I then converted this to a nexus format alignment for `Beast`.
+
+```bash
+seqmagick convert --output-format nexus --alphabet dna lyc_genomemax.fasta lyc_genomemax.nex
+```
+
+I have been playing with `Beast` to assess the effects of different priors and setting on perfomance, especially in terms of how to appropriately use the time calibrarions. This is all entered via `beauti`.
+
+```bash
+ml beast
+beauti
+```
+
+Append "Orig" to the name and add the following just after the data:
+
+```xml
+    <data id='lyc_genomesub' spec='FilteredAlignment' filter='-' data='@lyc_genomesubOrig' constantSiteWeights='35769 20210 20276 35745'>
+    </data>
+
+```
+
+# Quantifying treeness and identifiying putative cases of admixture with Treemix
+
+# Examining genome-wide heterogeneity in relationships with Caster
