@@ -1,10 +1,10 @@
 # LycAdmixMosaic
-Notes, scripts and analyses for my study of admixture and ancestry in Lycaeides from PoolSeq data
+Notes, scripts and analyses for my study of admixture and ancestry in *Lycaeides* from PoolSeq data
 
 This is a fork of the contemporary evolution data set and analyses that excludes the time dimension. See [Pool_DNA_plates](https://drive.google.com/drive/folders/1U4AsshyMvlySNtODuSLWo0dYDH_rgho4) for details on samples and sample concentrations.
 
 # Data
-The pool-seq data are currently in /uufs/chpc.utah.edu/common/home/gompert-group2/data/Lycaeides_poolSeq/. The set of samples I am using here, which are from a single (initial) round of sequencing are as follows:
+The raw pool-seq data are currently in /uufs/chpc.utah.edu/common/home/gompert-group2/data/Lycaeides_poolSeq/. The set of samples I am using here, which are from a single (initial) round of sequencing are as follows:
 
 | Population | Samples (N)| Nominal taxon |
 |------------|------------|---------------|
@@ -32,7 +32,7 @@ The pool-seq data are currently in /uufs/chpc.utah.edu/common/home/gompert-group
 | VE | VE20 (48) | L. melissa |
 | YG | YG20 (48) | L. anna |
 
-Replicates (rep) are the same DNA extractions re-pooled and sequenced as a distinct sample. MEN = outgroup. The data were generated and cleaned up by BGI. Reports for each round of sequencing are attached: [BGI_F22FTSUSAT0310-01_LYCgpswR_report_en.pdf](https://github.com/zgompert/LycSpaceTimePoolSeq/files/9940314/BGI_F22FTSUSAT0310-01_LYCgpswR_report_en.pdf).
+Replicates (rep) are the same DNA extractions re-pooled and sequenced as a distinct sample. MEN = outgroup, *Plebejus argus*. The data were generated and cleaned up by BGI (with `soapnuke`). Here is the report from BGI:  [BGI_F22FTSUSAT0310-01_LYCgpswR_report_en.pdf](https://github.com/zgompert/LycSpaceTimePoolSeq/files/9940314/BGI_F22FTSUSAT0310-01_LYCgpswR_report_en.pdf).
 
 # DNA Sequence Alignment
 
@@ -206,7 +206,7 @@ $pm->wait_all_children;
 
 # Variant Calling
 
-I called variants `bcftools` (version 1.16). I did not perform INDEL realignment (it doesn't seem to be important ) and this approach is not aware I have pooled data. Nonetheless, this should be a solid approach for estimating allele frequencies and quantifying genetic differentiation among pouplations and species. 
+I called variants with `bcftools` (version 1.16). I did not perform INDEL realignment (it doesn't seem to be important) and this approach is not aware I have pooled data. Nonetheless, this should be a solid approach for estimating allele frequencies and generating alignment data for the tree-based analyses. 
 
 For this, I ran the following submission script,
 
@@ -255,22 +255,15 @@ foreach $chrom (@ARGV){
         $chrom =~ /chrom([0-9\.]+)/ or die "failed here: $chrom\n";
 	$out = "o_lycpool_chrom$1";
 	system "bcftools mpileup -b bams -d 1000 -f $genome -R $chrom -a FORMAT/DP,FORMAT/AD -q 20 -Q 30 -I -Ou | bcftools call -v -c -p 0.01 -Ov -o $out"."vcf\n";
-	#system "bcftools mpileup -S bams -d 1000 -f $genome -R $chrom -q 20 -Q 30 -I -t DP,AD,ADF,ADR -Ou | bcftools call -v -c -p 0.01 -Ov -o $out.vcf\n";
-
-
 	$pm->finish;
 
 }
 
 $pm->wait_all_children;
 ```
-Note that each chromosome (big scaffold) is being processes separately (chrom*list). 
+Note that each chromosome (big scaffold) is being processed separately (chrom*list). 
 
 The variant data are in `/uufs/chpc.utah.edu/common/home/gompert-group2/data/Lycaeides_poolSeq/SpecGenomVars`.
-
-# Preliminary analyses based on `bcftools` results
-
-I did some quick, preliminary analyses based on the above calling with `bcftools`. All of this is in /uufs/chpc.utah.edu/common/home/gompert-group2/data/Lycaeides_poolSeq/Variants/.
 
 I filtered the vcf file with `GATK` version (4.1.4.1), keeping only those with mapping quality > 30, depth > 1350 and bias scores less than +- 3. This uses [VarFiltFork2.pl](VarFiltFork2.pl), which is also shown below.
 
@@ -280,11 +273,9 @@ I filtered the vcf file with `GATK` version (4.1.4.1), keeping only those with m
 # filter vcf files 
 #
 
-
 use Parallel::ForkManager;
 my $max = 48;
 my $pm = Parallel::ForkManager->new($max);
-
 
 foreach $vcf (@ARGV){ ## takes vcf.gz
         $pm->start and next; ## fork
@@ -304,7 +295,7 @@ foreach $vcf (@ARGV){ ## takes vcf.gz
 $pm->wait_all_children;
 ```
 
-Then I extracted the allele depths from the filtered vcf files,
+Next, I extracted the allele depths (count of each allele for each SNP) from the filtered vcf files. This script also drops INDELS and multiallelic data.
 
 ```bash
 #!/usr/bin/bash
@@ -323,7 +314,7 @@ done
 
 ```
 
-This creates allele depth files for each allele (ad1* and ad2*) and chromosome, which I am using to obtain maximum likelihood allele frequency estimates (this is just the sample frequency... even a beta-binomial model would give the same point estimate with a flat prior). 
+This creates allele depth files for each allele (ad1* and ad2*) and chromosome, which I can use for downstream analyses. 
 
 I also grapped the SNP information (alleles):
 
@@ -342,7 +333,11 @@ do
 done
 ```
 
-
 All downstream analyses will be in `/uufs/chpc.utah.edu/common/home/gompert-group5/projects/`.
 
+# Population genetic structure
 
+As a first pass, I summarized patterns of population structure based on allele frequencies for chromosome and sets of chromosomes (autosomes vs Z). My initial analyses, which include some estimates of Fst as well, are in [pcaFst.R](pcaFst.R), wheras code for a summary figure with PCAs for all autosomes vs Z and a map (with a blank spot for a tree) are in [mkPCAfig.R](mkPCAfig.R). Neither is final. I want to pay attention to how exactly I get allele frequeny estiamtes and to any additional filtering for the PCA (e.g., focus on SNPs with some minimal coverage in all populations). This is all in the subdirectory `/uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/GenData`.
+
+# Time-calibrated phylogenetic tree
+ 
