@@ -363,6 +363,7 @@ I then add the conts by appending "Orig" to the name, "lyc_genomemax' in the xml
 ```xml
     <data id='lyc_genomemax' spec='FilteredAlignment' filter='-' data='@lyc_genomemaxOrig' constantSiteWeights='35769 20210 20276 35745'>
     </data>
+```
 
 I am using two sources for the calibration dates.
 
