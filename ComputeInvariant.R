@@ -16,7 +16,7 @@ chr<-which(totals >= 9211676)
 ## get total A, C, G, T
 bcnt<-apply(cnts[chr,-1],2,sum)
 
-## multiply by 0.00025 to match subsetting for SNP data
+## multiply by 0.00035 to match subsetting for SNP data
 prop<-0.00035
 sbcnt<-floor(bcnt*prop)
 
