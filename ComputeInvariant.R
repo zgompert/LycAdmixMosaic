@@ -17,7 +17,7 @@ chr<-which(totals >= 9211676)
 bcnt<-apply(cnts[chr,-1],2,sum)
 
 ## multiply by 0.00025 to match subsetting for SNP data
-prop<-0.00025
+prop<-0.00035
 sbcnt<-floor(bcnt*prop)
 
 ## get SNP bases
@@ -28,6 +28,5 @@ snpCnts<-floor(apply(snps[-13,-1],2,mean))
 invar<-sbcnt-snpCnts
 invar
 #   A    C    G    T 
-#35769 20210 20276 35745 
-
+#50190 28322 28284 50114
 
