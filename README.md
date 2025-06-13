@@ -369,32 +369,41 @@ I am using two sources for the calibration dates.
 
 1. [Vila et al. 2011](https://royalsocietypublishing.org/doi/full/10.1098/rspb.2010.2213) focuses on the colonization of the Americas by *Polyommatus* blues. This is older and has more limited data (a few mitochondrial and nuclear genes) but includes a good sample of old and new world *Lycaeides*. The TMRCA for *Lycaeides* (old and new world) was estimated at 2.4 million years.
 
-2. [Kawahara et al. 2023](https://www.nature.com/articles/s41559-023-02041-9) uses many more genes and species for a global phylogeny of butterflies. With that siad, this only has *L. melissa*, *L. anna* and *L. idas* from the contiguous USA, and thus the TMRCA for these likely underestimates that of our set of *Lycaeides* (which includes Alaska, and this appears to be the deepest split in the ingroup for our tree). Figure S1 in the paper gives the TMRCA for *Lycaeides* as 1.29 million years and for *Lycaeides* + *Plebejus argus* as 5.22 million years (this is our outgroup, their sample is from Japan, ours from France). My most recent runs set normal priors on both of these nodes based on this data. For *Lycaeides*, I used mean = 1.845 and SD = 0.283, which gives 95 density intervals of 1.29 to 2.4 (my dates). This is worth thinking about a bit more, but is likely about right. I used 5.22 for the mean for *Lycaeides* + *P. argus* and the same SD, 0.283, to reflect a similar level of uncertainty (again worth thinking about).
+2. [Kawahara et al. 2023](https://www.nature.com/articles/s41559-023-02041-9) uses many more genes and species for a global phylogeny of butterflies. With that siad, this only has *L. melissa*, *L. anna* and *L. idas* from the contiguous USA, and thus the TMRCA for these likely underestimates that of our set of *Lycaeides* (which includes Alaska, and this appears to be the deepest split in the ingroup for our tree). Figure S1 in the paper gives the TMRCA for *Lycaeides* as 1.29 million years and for *Lycaeides* + *Plebejus argus* as 5.22 million years (this is our outgroup, their sample is from Japan, ours from France). My most recent runs set normal priors on both of these nodes based on this data. For *Lycaeides*, I used mean = 1.845 and SD = 0.283, which gives 95 density intervals of 1.29 to 2.4 (my dates). This is worth thinking about a bit more, but is likely about right. I used 5.22 for the mean for *Lycaeides* + *P. argus* and the same SD, 0.283, to reflect a similar level of uncertainty.
 
-Other than that, here are my main thoughts and current choices for priors (which seem to be working okay, though the terminal branches are still probably too long, but their is also uncertainty):
+Other than that, here are my main thoughts on choices of priors:
 
-- HKY substitution model with kappa estimated and gamma rate heterogeneity approximated by four categoreis (everything else default). I probably want this or GTR; it is likely shallow enough for HKY. Read a bit more on this.
+- GTR substitution model with relative rates estimated and gamma rate heterogeneity approximated by four categoreis (everything else default). This is flexible and we seem to have sufficient data to estimate the parameters. So, I am happy with this choice.
 
-- I am currently using the Optimised Relaxed Clock, which is more flexible than the Strict Clock but a bit less flexible than the Random Local Clock. This basically allows rates to change along the tree but in a correlated way. I want to read and think more about this. I am **estimating the clock rate**, which is important given my calibration information. This requires messing with settings in the file menu to be allowed. When I don't do this, I get very wonky results. I could instead maybe set it to 0.0029 based on the *Heliconius* mutation rate[ Keightley et al. 2015](https://academic.oup.com/mbe/article/32/1/239/2925597), but estimating it and using the calibration nodes is probably the way to go.
+- I considered two clock models: the Optimised Relaxed Clock (ORC) and the Random Local Clock (RLC). The  ORC allows for rate variation and works well whether the rates and branch lengths are correlated or not . I want to read and think more about this. As noted in the help, the RLC allows the clock model to behave like a strict clock (if there are no rate changes) and a relaxed clock (if there are many rate changes). The number of rate changes is sampled during MCMC, and is drive by the data and prior. From this perspective, it is superior to the strict clock and relaxed clock models. However, it may suffer from convergence issues. The latter was an issue but I solved it (see below).
 
-- I am using the Coalescent Bayesian Skyline prior, which makes sense for cases where you have multiple populations or individuals from the same species. I might also consider the Extended version of this. They differ in terms of where (at nodes or wherever) Ne changes. I left the rest of the priors at their defaults, but this is worth revisiting.
+- I am **estimating the clock rate**, which is important given my calibration information. This requires messing with settings in the file menu to be allowed. When I don't do this, I get very wonky results. I could instead maybe set it to 0.0029 based on the *Heliconius* mutation rate[ Keightley et al. 2015](https://academic.oup.com/mbe/article/32/1/239/2925597), but estimating it and using the calibration nodes is more sensible (I am using 0.0029 as the starting value).
 
-- I am using the defaults from MCMC so far.
+- I considered the Coalescent Bayesian Skyline prior (BSP) and the Extended Coalescent Bayesian Skyline Prior (EBSP). Either is appropriate in cases where you have multiple populations or individuals from the same species. The two approaches differ in terms of where (at nodes or anywhere) effective population size changes. I left the rest of the priors at their defaults, but this is worth revisiting.
 
-I then run `Beast` with:
+I ran full analyses with three different combinations: ORC and BSP [lyc_wgs_max.xml](lyc_wgs_max.xml), ORC and EBSP [lyc_wgs_max_ebsp.xml](lyc_wgs_max_ebsp.xml), and RLC and BSP [lyc_wgs_max_ranlc.xml](lyc_wgs_max_ranlc.xml). All three gave the same topology and mostly similar branch lengths. I decided to focus on the RLC with BSP as I think the RLC is better dealing with the SNP-based nature of the data (all was derived from allele frequencies) and yielding more sensible branch lengths for the shallower divergences. This initially gave me some trouble with mixing (unlike the others). I solved this by using [coupled MCMC](https://github.com/nicfel/CoupledMCMC?tab=readme-ov-file) with four hot chains and one cold chain (delta temp = 0.025). I ran six coupled MCMC runs (each with the five aforementioned chains), each comprising 500,000,000 with samples stored every 25,000 steps. 
+
+
+I ran these with `Beast`:
 
 ```bash
 ml beast
-beast lyc_genomemax.nex
+beast -prefix ch1 lyc_wgs_max_ranlc.xml
+beast -prefix ch2 lyc_wgs_max_ranlc.xml 
+beast -prefix ch3 lyc_wgs_max_ranlc.xml 
+beast -prefix ch4 lyc_wgs_max_ranlc.xml 
+beast -prefix ch5 lyc_wgs_max_ranlc.xml  
+beast -prefix ch6 lyc_wgs_max_ranlc.xml 
+
 ```
 
-I use `treeannotator` to make the consensus tree (median heights) but should also run some MCMC diagostics. I have been visualizing the tree with:
+I then used `logcombiner` to combine the trees and logs and check for mixing and convergence. I applied the 10% burnin to each chain at this stage. The outfiles for the main analysis (RLC with BSP) are: xxx and xxx. 
+
+I use `treeannotator` to make the consensus tree (median heights), xxx. I have been visualizing the tree with:
 
 ```bash
 java -jar FigTree_v1.4.4/lib/figtree.jar mctree.combined-wgs_max.tre 
 ```
-
-The latter is the output tree from `treeannotator`.
 
 # Quantifying treeness and identifiying putative cases of admixture with Treemix
 
