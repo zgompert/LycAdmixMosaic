@@ -349,7 +349,7 @@ I am working on a time-calibrated tree of *Lycaeides* with `Beast` (version 2.7.
 seqmagick convert --output-format nexus --alphabet dna lyc_genomemax.fasta lyc_genomemax.nex
 ```
 
-I have been playing with `Beast` to assess the effects of different priors and setting on perfomance, especially in terms of how to appropriately use the time calibrarions. This is all entered via `beauti`.
+The alignment file includes 5408 characters (SNPs), 23 taxa and no missing data. I experimented with `Beast` to assess the effects of different priors and setting on perfomance, especially in terms of how to appropriately use the time calibrarions. This is all entered via `beauti`.
 
 ```bash
 ml beast
