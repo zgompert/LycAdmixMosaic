@@ -406,6 +406,8 @@ java -jar FigTree_v1.4.4/lib/figtree.jar mctree.combined-wgs_max_ranlc_bsp.tre.
 ```
 I saved tree  plots with time estimates and HPD estiamtes on these.
 
+As noted, my end focus was on the RLC BSP model, but I also have results from the other runs. These did not use coupled MCMC (they mixed well without it). The ORC with BSP results are in  lyc_wgs*, lyc_wgs_max_c2lyc_wgs_max*, lyc_wgs_max_c3lyc_wgs_max*,  and lyc_wgs_max_c5lyc_wgs_max* (four chains) and combined in combined_orclock_bsp* (10% burnin, no thinning beyond the initial), and the single chaing for RLC with EBSP is lyc_wgs_max_ebsp*. These give the same topology.
+
 # Quantifying treeness and identifiying putative cases of admixture with Treemix
 
 # Examining genome-wide heterogeneity in relationships with Caster
