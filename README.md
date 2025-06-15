@@ -381,7 +381,7 @@ Other than that, here are my main thoughts on choices of priors:
 
 - I considered the Coalescent Bayesian Skyline prior (BSP) and the Extended Coalescent Bayesian Skyline Prior (EBSP). Either is appropriate in cases where you have multiple populations or individuals from the same species. The two approaches differ in terms of where (at nodes or anywhere) effective population size changes. I left the rest of the priors at their defaults, but this is worth revisiting.
 
-I ran full analyses with three different combinations: ORC and BSP [lyc_wgs_max.xml](lyc_wgs_max.xml), ORC and EBSP [lyc_wgs_max_ebsp.xml](lyc_wgs_max_ebsp.xml), and RLC and BSP [lyc_wgs_max_ranlc.xml](lyc_wgs_max_ranlc.xml). All three gave the same topology and mostly similar branch lengths. I decided to focus on the RLC with BSP as I think the RLC is better dealing with the SNP-based nature of the data (all was derived from allele frequencies) and yielding more sensible branch lengths for the shallower divergences. This initially gave me some trouble with mixing (unlike the others). I solved this by using [coupled MCMC](https://github.com/nicfel/CoupledMCMC?tab=readme-ov-file) with four hot chains and one cold chain (delta temp = 0.025). I ran six coupled MCMC runs (each with the five aforementioned chains), each comprising 500,000,000 with samples stored every 25,000 steps. 
+I ran full analyses with three different combinations: ORC and BSP [lyc_wgs_max.xml](lyc_wgs_max.xml), ORC and EBSP [lyc_wgs_max_ebsp.xml](lyc_wgs_max_ebsp.xml), and RLC and BSP [lyc_wgs_max_ranlc.xml](lyc_wgs_max_ranlc.xml). All three gave the same topology and mostly similar branch lengths. I decided to focus on the RLC with BSP as I think the RLC is better dealing with the SNP-based nature of the data (all was derived from allele frequencies) and yielding more sensible branch lengths for the shallower divergences. This initially gave me some trouble with mixing (unlike the others). I solved this by using [coupled MCMC](https://github.com/nicfel/CoupledMCMC?tab=readme-ov-file) with four hot chains and one cold chain (delta temp = 0.025). I ran six coupled MCMC runs (each with the five aforementioned chains), each comprising 500,000,000 iterations. Log samples (parameter values) were stored every 1000 iterations, whereas tree samples were stored every 5000. 
 
 
 I ran these with `Beast`:
@@ -397,13 +397,14 @@ beast -prefix ch6 lyc_wgs_max_ranlc.xml
 
 ```
 
-I then used `logcombiner` to combine the trees and logs and check for mixing and convergence. I applied the 10% burnin to each chain at this stage. The outfiles for the main analysis (RLC with BSP) are: xxx and xxx. 
+I then used `logcombiner` (version 2.7.5) to combine the trees and logs. I applied the 20% burnin to each chain at this stage and furtehr thinned the samples (mostly to reduce file sizes), such that log files containe every 5000th sample and treee files every 20,000th. The outfiles for the main analysis (RLC with BSP) are: combined_ranlc_bsp.log  (480,006 samples) and combined_ranlc_bsp.trees (120,006 trees). I used `tracer` (version 1.7) to then check the effective sample sizes, all were higher than 200, most were much higher.
 
-I use `treeannotator` to make the consensus tree (median heights), xxx. I have been visualizing the tree with:
+I use `treeannotator` to make the consensus tree (median heights), mctree.combined-wgs_max_ranlc_bsp.tre. I visualized the tree with:
 
 ```bash
-java -jar FigTree_v1.4.4/lib/figtree.jar mctree.combined-wgs_max.tre 
+java -jar FigTree_v1.4.4/lib/figtree.jar mctree.combined-wgs_max_ranlc_bsp.tre. 
 ```
+I saved tree  plots with time estimates and HPD estiamtes on these.
 
 # Quantifying treeness and identifiying putative cases of admixture with Treemix
 
