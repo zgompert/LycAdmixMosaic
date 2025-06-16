@@ -410,4 +410,85 @@ As noted, my end focus was on the RLC BSP model, but I also have results from th
 
 # Quantifying treeness and identifiying putative cases of admixture with Treemix
 
+Next, I used `treemix` (version 1.13) to quantify how deviations from strict bifurcating trees varied across the genome, how this varied (for autosomes) with chromosome size (and thus with average rates of recombination), and to identify the most noteworthy instances of putative admixture for further evaluation with `caster`.
+
+I first created infiles for `treemix` for each chromosome using the read count data. This was done in the `/uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/GenData` directory with the [mkTreeMixin.R](mkTreeMixin.R). The rest of these analyses are in the `TreeMx` subdirectory. 
+
+I ran `treemix` for 0 to xx migration (admixture) events on the full data set from each of the 23 chromosomes.
+
+```bash
+#!/bin/bash
+#SBATCH --time=240:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=12
+#SBATCH --account=gompert-kp
+#SBATCH --partition=gompert-kp
+#SBATCH --job-name=tmix
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/TreeMx
+
+perl run_max_treemix.pl treemix_in_ch*gz
+```
+Which runs:
+
+```perl
+#!/usr/bin/perl
+#
+## version of treemix fork script that obtains the ML result across $N runs
+
+
+use Parallel::ForkManager;
+my $max = 48;
+my $pm = Parallel::ForkManager->new($max);
+
+$N = 20;
+
+foreach $fi (@ARGV){
+	$fi =~ m/(\d+)/ or die "failed here $fi\n";
+	$ch = $1;
+	foreach $m (0..8){
+		$pm->start and next;
+		$out = "tro_ch$ch"."_m$m";
+		system "treemix -i $fi -o $out -k 100 -m $m -root MEN12\n";
+		open(IN, "$out\.llik");
+		$a = <IN>;
+		$a = <IN>;
+		chomp($a);
+		$a =~ m/:\s+(\-[0-9\.]+)/ or die "can't find the ll: $a\n";
+		$ll = $1;
+		close(IN);
+		print "starting ll = $ll\n";
+		foreach $i (1..$N){
+			$tout = "temp_tro_ch$ch"."_m$m";
+			system "treemix -i $fi -o $tout -k 100 -m $m -root MEN12\n";
+			open(IN, "$tout\.llik");
+			$a = <IN>;
+			$a = <IN>;
+			chomp($a);
+			$a =~ m/:\s+(\-[0-9\.]+)/ or die "can't find the ll: $a\n";
+			$llt = $1;
+			if($llt > $ll){
+				$ll = $llt;
+				system "mv $tout\.treeout.gz $out\.treeout.gz\n";
+				system "mv $tout\.modelcov.gz $out\.modelcov.gz\n";
+				system "mv $tout\.vertices.gz $out\.vertices.gz\n";
+				system "mv $tout\.cov.gz $out\.cov.gz\n";
+				system "mv $tout\.covse.gz $out\.covse.gz\n";
+				system "mv $tout\.edges.gz $out\.edges.gz\n";
+				system "mv $tout\.llik $out\.llik\n";
+			}
+		}
+		$pm->finish;
+	}
+}
+
+$pm->wait_all_children;
+```
+Importantly, this runs the full ML analysis 20 times for each set of conditions are retains the results with the highest likelihood out of the set of runs. In all cases, I set *P. argus* as the root (MEN12) and used 100 SNPs per block for estimation of the covariance matrix.
+
+
+
 # Examining genome-wide heterogeneity in relationships with Caster
