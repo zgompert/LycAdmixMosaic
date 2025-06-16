@@ -432,7 +432,7 @@ cd /uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/TreeMx
 
 perl run_max_treemix.pl treemix_in_ch*gz
 ```
-Which runs:
+Which runs [run_max_treemix.pl](run_max_treemix.pl)
 
 ```perl
 #!/usr/bin/perl
@@ -489,6 +489,7 @@ $pm->wait_all_children;
 ```
 Importantly, this runs the full ML analysis 20 times for each set of conditions are retains the results with the highest likelihood out of the set of runs. In all cases, I set *P. argus* as the root (MEN12) and used 100 SNPs per block for estimation of the covariance matrix.
 
+Next, I summarized the results in R. 
 
 
 # Examining genome-wide heterogeneity in relationships with Caster
