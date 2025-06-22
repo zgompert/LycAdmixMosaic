@@ -493,3 +493,23 @@ Next, I summarized the results in R.
 
 
 # Examining genome-wide heterogeneity in relationships with Caster
+
+I am using `caster` (version v1.20.2.5)--Coalescence-aware Alignment-based Species Tree EstimatoR--to quantify variation in the best supported tree topologies across the genome, first among chromosomes and then in a focused manner across chromosomes for subsets of focal taxa (putative cases of admixture or tree discordance). See [Zhang et al. 2025](https://www.science.org/doi/abs/10.1126/science.adk9688).
+
+I am working with the same most likely sequence alignments that I began with for Beast (prior to subsetting) and then once again getting rid of the replicat samples for tree construction. I am not further subsetting the data but am seperately inferring the tree for each chromosome. This is all being done in `/uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/Caster`.
+
+```perl
+#!/usr/bin/perl
+#
+
+foreach $i (1..23){
+
+	print "ASTER-Linux/bin/caster-site -i sub_max_chrom$i.fasta -o cout_max_$i --root MEN --thread 24\n";
+	system "ASTER-Linux/bin/caster-site -i sub_max_chrom$i.fasta -o cout_max_$i --root MEN --thread 24\n";
+}
+```
+I am currently using the cater-site model, but I want to look back over the paper and consider the pair of sites model (these essentialy correspond with different models of DNA sequence evolution).
+
+I am then using `ape` (version 5.8) to plot the 23 trees (while rotate around nodes to maximize visula similarity for comparison). See [plotTrees.R](plotTrees.R).
+
+I have played around a bit with window based analyses (see swin* output and `WinTest.R`) but I need perform these analyses in a more focused and thoughtful manner now.
