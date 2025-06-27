@@ -516,6 +516,8 @@ I am then using `ape` (version 5.8) to plot the 23 trees (while rotate around no
 
 I have now run a number of sliding window analyses with Caster. For each set of 4 taxa (A, B, C and outgroup) I compute scores in 10 kb windows, then average over sets of 5 windows to plot normalized (sum to 1) scores across the genome. Here is what I have so far:
 
-| A | B | C | P(A+B) | P(A+C) | P(B+C) | Notes | Direcotry |
+| A | B | C | P(A+B) | P(A+C) | P(B+C) | Graph | Direcotry |
 |---|---|---|--------|--------|--------|-------|-----------|
-| BHP | SIN | YG | 0.834 | 0.010 | 0.064 | little to no admixture ![winBHPxSINxYG](https://github.com/user-attachments/assets/2a993fdb-4494-4e98-aeec-610e5f57d686) | winBHPxSINxYG |
+| BHP | SIN | YG | 0.834 | 0.010 | 0.064 | ![winBHPxSINxYG](https://github.com/user-attachments/assets/2a993fdb-4494-4e98-aeec-610e5f57d686) | winBHPxSINxYG |
+| BTB | GNP | SIN | 0.146 | 0.736 | 0.118 | ![winBTBxGNPxSIN](https://github.com/user-attachments/assets/7f1d597c-e83c-430e-b2b8-d85234a2566b)
+ | winBTBxGNPxSIN |
