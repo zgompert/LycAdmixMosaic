@@ -519,5 +519,6 @@ I have now run a number of sliding window analyses with Caster. For each set of 
 | A | B | C | P(A+B) | P(A+C) | P(B+C) | Graph | Direcotry |
 |---|---|---|--------|--------|--------|-------|-----------|
 | BHP | SIN | YG | 0.834 | 0.010 | 0.064 | ![winBHPxSINxYG](https://github.com/user-attachments/assets/2a993fdb-4494-4e98-aeec-610e5f57d686) | winBHPxSINxYG |
-| BTB | GNP | SIN | 0.146 | 0.736 | 0.118 | ![winBTBxGNPxSIN](https://github.com/user-attachments/assets/7f1d597c-e83c-430e-b2b8-d85234a2566b)
- | winBTBxGNPxSIN |
+| BTB | GNP | SIN | 0.146 | 0.736 | 0.118 | ![winBTBxGNPxSIN](https://github.com/user-attachments/assets/7f1d597c-e83c-430e-b2b8-d85234a2566b) | winBTBxGNPxSIN |
+| CLH | TIC | BHP | 0.382 | 0.442 | 0.277 | ![winCHLxTICxBHP](https://github.com/user-attachments/assets/1a56de44-5681-4d95-96d0-6d081f12cf91) | winCLHxTICxBHP |
+| CLH | YG | BHP | 0.168 | 0.750 | 0.082 | ![winCHLxYGxBHP](https://github.com/user-attachments/assets/fc27c381-4f2f-4896-9d7b-0cce354658b5) | inCLHxYGxBHP |
