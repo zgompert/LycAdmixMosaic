@@ -531,3 +531,5 @@ I have now run a number of sliding window analyses with Caster. For each set of 
 | MR | CP | YG | 0.337 | 0.537 | 0.126 | ![winMRxCPxYG](https://github.com/user-attachments/assets/9ac3e06a-eaad-41db-a5dc-a84b3e3f2a55) | winMRxCPxYG |
 | MR | YG | BHP | 0.630 | 0.296 | 0.074 | ![winMRxYGxBHP](https://github.com/user-attachments/assets/a52ab7df-6736-4875-98b4-3eab24d43fdc) | winMRxYGxBHP |
 | TIC | YG | BHP | 0.240 | 0.661 | 0.099 | ![winTICxYGxBHP](https://github.com/user-attachments/assets/63ef41cf-036d-4d2f-b3a5-ca28f4612147) | winTICxYGxBHP |
+| BKM | EP | CLH | 0.410 | 0.301 | 0.289 | ![winBKMxEPxCLH](https://github.com/user-attachments/assets/89b71d50-faba-4f11-a4f7-365176d12e7e) | winBKMxEPxCLH |
+
