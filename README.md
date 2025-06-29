@@ -519,6 +519,7 @@ I have now run a number of sliding window analyses with Caster. For each set of 
 | A | B | C | P(A+B) | P(A+C) | P(B+C) | Graph | Direcotry |
 |---|---|---|--------|--------|--------|-------|-----------|
 | BHP | SIN | YG | 0.834 | 0.010 | 0.064 | ![winBHPxSINxYG](https://github.com/user-attachments/assets/2a993fdb-4494-4e98-aeec-610e5f57d686) | winBHPxSINxYG |
+| BKM | EP | CLH | 0.410 | 0.301 | 0.289 | ![winBKMxEPxCLH](https://github.com/user-attachments/assets/89b71d50-faba-4f11-a4f7-365176d12e7e) | winBKMxEPxCLH |
 | BTB | GNP | SIN | 0.146 | 0.736 | 0.118 | ![winBTBxGNPxSIN](https://github.com/user-attachments/assets/7f1d597c-e83c-430e-b2b8-d85234a2566b) | winBTBxGNPxSIN |
 | CLH | TIC | BHP | 0.382 | 0.442 | 0.277 | ![winCHLxTICxBHP](https://github.com/user-attachments/assets/1a56de44-5681-4d95-96d0-6d081f12cf91) | winCLHxTICxBHP |
 | CLH | YG | BHP | 0.168 | 0.750 | 0.082 | ![winCHLxYGxBHP](https://github.com/user-attachments/assets/fc27c381-4f2f-4896-9d7b-0cce354658b5) | winCLHxYGxBHP |
@@ -531,5 +532,6 @@ I have now run a number of sliding window analyses with Caster. For each set of 
 | MR | CP | YG | 0.337 | 0.537 | 0.126 | ![winMRxCPxYG](https://github.com/user-attachments/assets/9ac3e06a-eaad-41db-a5dc-a84b3e3f2a55) | winMRxCPxYG |
 | MR | YG | BHP | 0.630 | 0.296 | 0.074 | ![winMRxYGxBHP](https://github.com/user-attachments/assets/a52ab7df-6736-4875-98b4-3eab24d43fdc) | winMRxYGxBHP |
 | TIC | YG | BHP | 0.240 | 0.661 | 0.099 | ![winTICxYGxBHP](https://github.com/user-attachments/assets/63ef41cf-036d-4d2f-b3a5-ca28f4612147) | winTICxYGxBHP |
-| BKM | EP | CLH | 0.410 | 0.301 | 0.289 | ![winBKMxEPxCLH](https://github.com/user-attachments/assets/89b71d50-faba-4f11-a4f7-365176d12e7e) | winBKMxEPxCLH |
+| TIC | YG | BHP | 0.722| 0.133 | 0.144 | ![winTICxBHPxGNP](https://github.com/user-attachments/assets/141d98e0-7cb4-4cbe-b6cf-9b30e8b15bd5) | winTICxBHPxGNP |
+
 
