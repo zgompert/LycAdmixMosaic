@@ -514,7 +514,17 @@ I am then using `ape` (version 5.8) to plot the 23 trees (while rotate around no
 
 # Window-based analyses with Caster
 
-I have now run a number of sliding window analyses with Caster. For each set of 4 taxa (A, B, C and outgroup) I compute scores in 10 kb windows, then average over sets of 5 windows to plot normalized (sum to 1) scores across the genome. Here is what I have so far:
+I have now run a number of sliding window analyses with Caster. For each set of 4 taxa (A, B, C and outgroup) I compute scores in 10 kb windows, then average over sets of 5 windows to plot normalized (sum to 1) scores across the genome. I have one sub-directory for each set of taxa. The basic commands look like this (executed from within the sub-directory with a mapping file, Sub* file and symbolic links to the sub_max* alignments):
+
+```bash
+## grap the alignment for the four taxa
+perl ../WinSubAlign.pl SubABMxSINxTBY.txt sub_max_chrom*
+
+## run the window based analysis
+perl RunWindows.pl
+```
+
+After running [WinSubAlign.pl](WinSubAlign.pl) and [RunWindows.pl](RunWindows.pl), I summarize the results with [WinTest.R](WinTest.R). Here is what I have so far (all use SBW as the outgroup, 4th taxon):
 
 | A | B | C | P(A+B) | P(A+C) | P(B+C) | Graph | Direcotry |
 |---|---|---|--------|--------|--------|-------|-----------|
