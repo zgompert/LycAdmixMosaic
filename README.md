@@ -518,6 +518,7 @@ I have now run a number of sliding window analyses with Caster. For each set of 
 
 | A | B | C | P(A+B) | P(A+C) | P(B+C) | Graph | Direcotry |
 |---|---|---|--------|--------|--------|-------|-----------|
+| ABM | SIN | TBY | 0.811 | 0.093 | 0.096 | ![winABMxSINxTBY](https://github.com/user-attachments/assets/1343583e-d66c-4b56-8d9a-323e1482678c) | winABMxSINxTBY |
 | BCR | GNP | SIN | 0.143 | 0.738 | 0.119 | ![winBCRxGNPxSIN](https://github.com/user-attachments/assets/346afff6-c911-49f9-a5be-5f8cad2f25f4) | winBCRxGNPxSIN |
 | BCR | BTB | YG | 0.840 | 0.080 | 0.080 | ![winBCRxBTBxYG](https://github.com/user-attachments/assets/86430615-a6a1-4363-94c7-647107804a2c) | winBCRxBTBxYG |
 | BHP | SIN | YG | 0.834 | 0.100 | 0.064 | ![winBHPxSINxYG](https://github.com/user-attachments/assets/2a993fdb-4494-4e98-aeec-610e5f57d686) | winBHPxSINxYG |
