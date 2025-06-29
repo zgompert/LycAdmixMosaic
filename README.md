@@ -532,6 +532,7 @@ I have now run a number of sliding window analyses with Caster. For each set of 
 | MR | CP | YG | 0.337 | 0.537 | 0.126 | ![winMRxCPxYG](https://github.com/user-attachments/assets/9ac3e06a-eaad-41db-a5dc-a84b3e3f2a55) | winMRxCPxYG |
 | MR | YG | BHP | 0.630 | 0.296 | 0.074 | ![winMRxYGxBHP](https://github.com/user-attachments/assets/a52ab7df-6736-4875-98b4-3eab24d43fdc) | winMRxYGxBHP |
 | TIC | YG | BHP | 0.240 | 0.661 | 0.099 | ![winTICxYGxBHP](https://github.com/user-attachments/assets/63ef41cf-036d-4d2f-b3a5-ca28f4612147) | winTICxYGxBHP |
-| TIC | YG | BHP | 0.722| 0.133 | 0.144 | ![winTICxBHPxGNP](https://github.com/user-attachments/assets/141d98e0-7cb4-4cbe-b6cf-9b30e8b15bd5) | winTICxBHPxGNP |
-
+| TIC | BHP | GNP | 0.722| 0.133 | 0.144 | ![winTICxBHPxGNP](https://github.com/user-attachments/assets/141d98e0-7cb4-4cbe-b6cf-9b30e8b15bd5) | winTICxBHPxGNP |
+| GNP | TBY | SIN | 0.105 | 0.376 | 0.520 | ![winGNPxTBYxSIN](https://github.com/user-attachments/assets/a52d1df0-46b3-4bb0-af68-c3c8e2865102) | winGNPxTBYxSIN |
+| GNP | TBY | YG | 0.413 | 0.405 | 0.182 | ![winGNPxTBYxYG](https://github.com/user-attachments/assets/fda9cb1f-2a84-4d23-8787-f55afa9f842c) | winGNPxTBYxYG |
 
