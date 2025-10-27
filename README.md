@@ -371,6 +371,16 @@ I am using two sources for the calibration dates.
 
 2. [Kawahara et al. 2023](https://www.nature.com/articles/s41559-023-02041-9) uses many more genes and species for a global phylogeny of butterflies. With that siad, this only has *L. melissa*, *L. anna* and *L. idas* from the contiguous USA, and thus the TMRCA for these likely underestimates that of our set of *Lycaeides* (which includes Alaska, and this appears to be the deepest split in the ingroup for our tree). Figure S1 in the paper gives the TMRCA for *Lycaeides* as 1.29 million years and for *Lycaeides* + *Plebejus argus* as 5.22 million years (this is our outgroup, their sample is from Japan, ours from France). My most recent runs set normal priors on both of these nodes based on this data. For *Lycaeides*, I used mean = 1.845 and SD = 0.283, which gives 95 density intervals of 1.29 to 2.4 (my dates). This is worth thinking about a bit more, but is likely about right. I used 5.22 for the mean for *Lycaeides* + *P. argus* and the same SD, 0.283, to reflect a similar level of uncertainty.
 
+**Update** the outgroup was *L. argyrognomon* not *P. argus*. The date from [Vila et al. 2011](https://royalsocietypublishing.org/doi/full/10.1098/rspb.2010.2213) for node 9 (see supplment table 7 and figure 4) is good for calibrating the root. They present multiple estimates, I am using the mean and SD of four esimates, from the first two table columns.
+
+```r
+sd(c(2.4,2.7,1.9,1.5))
+#[1] 0.5315073
+mean(c(2.4,2.7,1.9,1.5))
+#[1] 2.125
+```
+I am still using 1.29 for American *L. melissa*, *L. anna* and *L. idas* with the same SD (0.53).
+
 Other than that, here are my main thoughts on choices of priors:
 
 - GTR substitution model with relative rates estimated and gamma rate heterogeneity approximated by four categoreis (everything else default). This is flexible and we seem to have sufficient data to estimate the parameters. So, I am happy with this choice.
