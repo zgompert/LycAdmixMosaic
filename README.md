@@ -20,7 +20,7 @@ The raw pool-seq data are currently in /uufs/chpc.utah.edu/common/home/gompert-g
 | HJ | HJ20 (48) | L. melissa |
 | HNV | HNV17 (48) | JH (admixed) |
 | LS | LS19 (48) | L. anna |
-| MEN | MEN12 (10) | L. argus (France) |
+| MEN | MEN12 (10) | L. argyrognomon (France) |
 | MR |  MR20 (48) | Sierra (admixed) |
 | MTU | MTU20 (48) | L. melissa |
 | SBW | SBW18 (20) | L. idas (Alaska) | 
@@ -32,7 +32,7 @@ The raw pool-seq data are currently in /uufs/chpc.utah.edu/common/home/gompert-g
 | VE | VE20 (48) | L. melissa |
 | YG | YG20 (48) | L. anna |
 
-Replicates (rep) are the same DNA extractions re-pooled and sequenced as a distinct sample. MEN = outgroup, *Plebejus argus*. The data were generated and cleaned up by BGI (with `soapnuke`). Here is the report from BGI:  [BGI_F22FTSUSAT0310-01_LYCgpswR_report_en.pdf](https://github.com/zgompert/LycSpaceTimePoolSeq/files/9940314/BGI_F22FTSUSAT0310-01_LYCgpswR_report_en.pdf).
+Replicates (rep) are the same DNA extractions re-pooled and sequenced as a distinct sample. MEN = outgroup, *Plebejus argyrognomon*. The data were generated and cleaned up by BGI (with `soapnuke`). Here is the report from BGI:  [BGI_F22FTSUSAT0310-01_LYCgpswR_report_en.pdf](https://github.com/zgompert/LycSpaceTimePoolSeq/files/9940314/BGI_F22FTSUSAT0310-01_LYCgpswR_report_en.pdf).
 
 # DNA Sequence Alignment
 
