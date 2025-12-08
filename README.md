@@ -32,7 +32,7 @@ The raw pool-seq data are currently in /uufs/chpc.utah.edu/common/home/gompert-g
 | VE | VE20 (48) | L. melissa |
 | YG | YG20 (48) | L. anna |
 
-Replicates (rep) are the same DNA extractions re-pooled and sequenced as a distinct sample. MEN = outgroup, *Plebejus argyrognomon*. The data were generated and cleaned up by BGI (with `soapnuke`). Here is the report from BGI:  [BGI_F22FTSUSAT0310-01_LYCgpswR_report_en.pdf](https://github.com/zgompert/LycSpaceTimePoolSeq/files/9940314/BGI_F22FTSUSAT0310-01_LYCgpswR_report_en.pdf).
+Replicates (rep) are the same DNA extractions re-pooled and sequenced as a distinct sample. MEN = outgroup, *Plebejus argyrognomon*. The data were generated and cleaned up by BGI (with `soapnuke`). Here is the report from BGI:  [BGI_F22FTSUSAT0310-01_LYCgpswR_report_en.pdf](https://github.com/zgompert/LycSpaceTimePoolSeq/files/9940314/BGI_F22FTSUSAT0310-01_LYCgpswR_report_en.pdf). The sequence data (in bam format) are now in the NCBI SRA ([PRJNA1375794](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1375794))
 
 # DNA Sequence Alignment
 
