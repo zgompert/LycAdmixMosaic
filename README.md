@@ -644,6 +644,98 @@ cd /uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/WingMap/Gene
 
 bcftools mpileup -b bams -d 1000 -f /uufs/chpc.utah.edu/common/home/gompert-group3/data/LmelGenome/Lmel_dovetailPacBio_genome.fasta -a FORMAT/DP,FORMAT/AD -q 20 -Q 30 -I -Ou | bcftools call -v -c -P 0.001 -p 0.01 -Ov -o lycWings.vcf
 ```
+I filtered the initial set of SNPs based on coverage, missing data, and bias tests, as indicated in vcfFilter.pl and filterSomeMore.pl. This generated the file morefilter_filtered2x_lycWings.vcf, which contained 137,955 SNPs. Next, I converted with vcf to gl format with vcf2glSamt.pl, producing with filtered_lyc_wings.gl with 137,865 SNPs (this dropped SNPs with MAF < 0.001, ~singletons). 
+
+I then split the gl files by population, see splitPops.pl.
+
+Next, I obtained empirical Bayes estiamtes of genotypes. I used allele frequency priors for these and took the maximum posterior genotype as the point estimate (0, 1, or 2). I used gl2MaxGest.pl  and gl2MaxGestSex.pl for this, which differ in that the latter treats females as haploid (for the Z chromosome). Z genotypes for females are coded 0 or 2. Here is what the 2nd script looks like:
+
+```perl
+#!/usr/bin/perl
+
+## This script returns a genotype matirx (locus by ind) with genotype
+## means (point estimates) from a genotype likelihood file; a HW prior is used based on allele frequencies provided in a separate file
+## this version treats females as haploid
+
+## USAGE: perl gl2MaxGestSex.pl sexfil.txt af_file.txt file.gl
+use warnings;
+
+$sf = shift (@ARGV);
+$af = shift (@ARGV);
+$in = shift (@ARGV);
+
+## read in and store sex
+open(IN, $sf) or die "read failed: $sf\n";
+$line = <IN>;
+chomp($line);
+@sex = split(/\s+/,$line);
+
+## read in and store maf's
+open (IN, $af) or die "read failed: $af\n";
+while (<IN>){
+	chomp;
+	@line = split(/\s+/,$_);
+	push (@af,$line[2]);
+}
+close (IN);
+
+
+## read through gl file and estimate genotypes
+open (IN, $in) or die "read failed: $in\n";
+$out = $in;
+$out =~ s/gl$/txt/;
+open (OUT, "> spntest_$out") or die;
+while (<IN>){
+    chomp;
+    if (s/^[0-9]+:\d+\s+//){ ## this line has genotype data, get rid of locus id
+	$p = shift(@af); ## get alt. af. for this locus
+        $priorM[0] = 1 * ((1-$p) ** 2);
+        $priorM[1] = 2 * $p * (1-$p) ;
+        $priorM[2] = 1 * ($p ** 2); 
+        $priorF[0] = (1-$p);
+        $priorF[1] = 0;
+        $priorF[2] = $p; 
+
+	@line = split(" ",$_);
+	@gest = ();
+	$cnt = 0;
+	while (@line){
+	    $sum = 0;
+	    for $i (0..2){ ## three genotyple likelihoods for each individual
+		$gl[$i] = shift(@line);
+		if($sex[$cnt] == 2){ ## male
+			$gl[$i] = (10 ** ($gl[$i]/-10)) * $priorM[$i];
+		} elsif($sex[$cnt]==1) { ## female
+			$gl[$i] = (10 ** ($gl[$i]/-10)) * $priorF[$i];
+		} else{
+			print "Error: I don't know this sex: $sex[$cnt]\n";
+		}
+		$sum += $gl[$i];
+	    }
+    	    for $i (0..2){ ## normalize
+		$gl[$i] = $gl[$i]/$sum;
+	    }
+   	    $gest = 0;
+	    $mgl = $gl[0]; ## set to 0
+	    for $i (1..2){
+		    if($gl[$i] > $mgl){
+			    $mgl = $gl[$i];
+			    $gest = $i;
+		    }
+	    }
+		
+
+    	    print OUT "$gest ";
+	    $cnt++;
+	}
+	print OUT "\n";	
+    }
+    else {
+	print "failed to match $_\n";
+    }
+}
+close (IN);
+```
 
 
 I need to check what I have there against the trait data, which is on [Dryad](https://datadryad.org/dataset/doi:10.5061/dryad.fc827). I will need to call variants and will likely focus on mapping within a few of the better sampled populations or sets of populations (with limited structure). I could combine this with something (preliminary) looking at the location of known diapause genes (especially interesting if they are mostly on the Z) as these are generally well documented. This would use the new annotation from Sam. 
