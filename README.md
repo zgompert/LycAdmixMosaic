@@ -753,6 +753,7 @@ while (<IN>){
     }
 }
 close (IN);
+
 ```
 I then combined and formatted these for input for association mapping, see [formatGenot.R](formatGeno.R) and:
 
@@ -777,5 +778,6 @@ perl gl2MaxGestSex.pl sex_YBG.txt ps_YBG.txt YBG_filtered_lyc_wings.gl
 ## format and combine genoypte files
 formatGeno.R
 ``
+
 
 I need to check what I have there against the trait data, which is on [Dryad](https://datadryad.org/dataset/doi:10.5061/dryad.fc827). I will need to call variants and will likely focus on mapping within a few of the better sampled populations or sets of populations (with limited structure). I could combine this with something (preliminary) looking at the location of known diapause genes (especially interesting if they are mostly on the Z) as these are generally well documented. This would use the new annotation from Sam. 
