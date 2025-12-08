@@ -647,7 +647,24 @@ bcftools mpileup -b bams -d 1000 -f /uufs/chpc.utah.edu/common/home/gompert-grou
 
 I filtered the initial set of SNPs based on coverage, missing data, and bias tests, as indicated in [vcfFilter.pl](vcfFilter.pl) and [filterSomeMore.pl](filterSomeMore.pl). This generated the file morefilter_filtered2x_lycWings.vcf, which contained 137,955 SNPs. Next, I converted with vcf to gl format with [vcf2glSamt.pl](vcf2glSamt.pl), producing with filtered_lyc_wings.gl with 137,865 SNPs (this dropped SNPs with MAF < 0.001, essetnially singletons). 
 
-I then split the gl files by population, see splitPops.pl.
+I then split the gl files by population, see splitPops.pl. I used `estpEM` to estimate allele frequencies, I ran this once with the standard (diploid) model and once with the version for sex chromosomes (to account for the Z) (the C code for the latter, estpEM.H, func.C and main.C, is included on this repository):
+
+```bash
+#!/usr/bin/bash
+
+#estpEM version 0.1 -- 2 October 2014
+
+## header includes IDs, this version is autosomes
+estpEM -i GNP_filtered_lyc_wings.gl -o p_GNP.txt -e 0.001 -m 40 -h 2
+estpEM -i SIN_filtered_lyc_wings.gl -o p_SIN.txt -e 0.001 -m 40 -h 2
+estpEM -i YBG_filtered_lyc_wings.gl -o p_YBG.txt -e 0.001 -m 40 -h 2
+
+## for sex chromosomes, automatically drops IDs, then looks for
+## line with sex = ploidy, 1 or 2, -h is for headers past that
+estpEMsex -i GNP_filtered_lyc_wings.gl -o ps_GNP.txt -e 0.001 -m 40 -h 0
+estpEMsex -i SIN_filtered_lyc_wings.gl -o ps_SIN.txt -e 0.001 -m 40 -h 0
+estpEMsex -i YBG_filtered_lyc_wings.gl -o ps_YBG.txt -e 0.001 -m 40 -h 0
+```
 
 Next, I obtained empirical Bayes estiamtes of genotypes. I used allele frequency priors for these and took the maximum posterior genotype as the point estimate (0, 1, or 2). I used [gl2MaxGest.pl](gl2MaxGest.pl) and [gl2MaxGestSex.pl](gl2MaxGestSex.pl) for this, which differ in that the latter treats females as haploid (for the Z chromosome). Z genotypes for females are coded 0 or 2. Here is what the 2nd script looks like:
 
@@ -737,6 +754,28 @@ while (<IN>){
 }
 close (IN);
 ```
+I then combined and formatted these for input for association mapping, see [formatGenot.R](formatGeno.R) and:
 
+```bash
+## get sex for sex chrom analysis
+head -n 2 GNP_filtered_lyc_wings.gl | tail -n 1| perl -p -i -e 's/[A-Z]+\d+\-\d+//g' | perl -p -i -e 'tr/FM/12/' > sex_GNP.txt
+head -n 2 SIN_filtered_lyc_wings.gl | tail -n 1| perl -p -i -e 's/[A-Z]+\d+\-\d+//g' | perl -p -i -e 'tr/FM/12/' > sex_SIN.txt
+head -n 2 YBG_filtered_lyc_wings.gl | tail -n 1| perl -p -i -e 's/[A-Z]+\d+\-\d+//g' | perl -p -i -e 'tr/FM/12/' > sex_YBG.txt
+
+## want to use sex chrom p estimates no matter what
+
+## genotype estiamte for autos, with normal p and max likelihood
+perl gl2MaxGest.pl p_GNP.txt GNP_filtered_lyc_wings.gl 
+perl gl2MaxGest.pl p_SIN.txt SIN_filtered_lyc_wings.gl 
+perl gl2MaxGest.pl p_YBG.txt YBG_filtered_lyc_wings.gl 
+
+## version for sex chromsomes
+perl gl2MaxGestSex.pl sex_GNP.txt ps_GNP.txt GNP_filtered_lyc_wings.gl 
+perl gl2MaxGestSex.pl sex_SIN.txt ps_SIN.txt SIN_filtered_lyc_wings.gl 
+perl gl2MaxGestSex.pl sex_YBG.txt ps_YBG.txt YBG_filtered_lyc_wings.gl 
+
+## format and combine genoypte files
+formatGeno.R
+``
 
 I need to check what I have there against the trait data, which is on [Dryad](https://datadryad.org/dataset/doi:10.5061/dryad.fc827). I will need to call variants and will likely focus on mapping within a few of the better sampled populations or sets of populations (with limited structure). I could combine this with something (preliminary) looking at the location of known diapause genes (especially interesting if they are mostly on the Z) as these are generally well documented. This would use the new annotation from Sam. 
