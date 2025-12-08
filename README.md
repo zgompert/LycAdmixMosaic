@@ -644,11 +644,12 @@ cd /uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/WingMap/Gene
 
 bcftools mpileup -b bams -d 1000 -f /uufs/chpc.utah.edu/common/home/gompert-group3/data/LmelGenome/Lmel_dovetailPacBio_genome.fasta -a FORMAT/DP,FORMAT/AD -q 20 -Q 30 -I -Ou | bcftools call -v -c -P 0.001 -p 0.01 -Ov -o lycWings.vcf
 ```
-I filtered the initial set of SNPs based on coverage, missing data, and bias tests, as indicated in vcfFilter.pl and filterSomeMore.pl. This generated the file morefilter_filtered2x_lycWings.vcf, which contained 137,955 SNPs. Next, I converted with vcf to gl format with vcf2glSamt.pl, producing with filtered_lyc_wings.gl with 137,865 SNPs (this dropped SNPs with MAF < 0.001, ~singletons). 
+
+I filtered the initial set of SNPs based on coverage, missing data, and bias tests, as indicated in [vcfFilter.pl](vcfFilter.pl) and [filterSomeMore.pl](filterSomeMore.pl). This generated the file morefilter_filtered2x_lycWings.vcf, which contained 137,955 SNPs. Next, I converted with vcf to gl format with [vcf2glSamt.pl](vcf2glSamt.pl), producing with filtered_lyc_wings.gl with 137,865 SNPs (this dropped SNPs with MAF < 0.001, essetnially singletons). 
 
 I then split the gl files by population, see splitPops.pl.
 
-Next, I obtained empirical Bayes estiamtes of genotypes. I used allele frequency priors for these and took the maximum posterior genotype as the point estimate (0, 1, or 2). I used gl2MaxGest.pl  and gl2MaxGestSex.pl for this, which differ in that the latter treats females as haploid (for the Z chromosome). Z genotypes for females are coded 0 or 2. Here is what the 2nd script looks like:
+Next, I obtained empirical Bayes estiamtes of genotypes. I used allele frequency priors for these and took the maximum posterior genotype as the point estimate (0, 1, or 2). I used [gl2MaxGest.pl](gl2MaxGest.pl) and [gl2MaxGestSex.pl](gl2MaxGestSex.pl) for this, which differ in that the latter treats females as haploid (for the Z chromosome). Z genotypes for females are coded 0 or 2. Here is what the 2nd script looks like:
 
 ```perl
 #!/usr/bin/perl
