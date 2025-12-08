@@ -564,7 +564,7 @@ After running [WinSubAlign.pl](WinSubAlign.pl) and [RunWindows.pl](RunWindows.pl
 
 I ended by asking whether admixture matters for traits. One simple way to do this, especially given the different ancestries for Z for autosomes in many cases, is to ask whether traits map to both the autosomes and Z (and thus mixing these mixes autosomal and Z genetic variatns for traits). Wing pattern probably provides the best candidate for this. We mapped wing patterns before, see [Lucas et al. 2018](https://onlinelibrary.wiley.com/doi/abs/10.1111/1755-0998.12777). This was all done with the linkage-map version of the genome (pre HiC). 
 
-I focused on the data from three populations, which have larger samples sizes, GNP (98), SIN (97), and YG (100); this is 295 samples (individuals) total. I aligned the fastq sequence files to the (HiC + PacBio) *L. melissa* genome with `bwa aln`:
+The data and scripts for this are in `/uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/WingMap/`I focused on the data from three populations, which have larger samples sizes, GNP (98), SIN (97), and YG (100); this is 295 samples (individuals) total. I aligned the fastq sequence files to the (HiC + PacBio) *L. melissa* genome with `bwa aln`:
 
 ```perl
 #!/usr/bin/perl
@@ -777,7 +777,63 @@ perl gl2MaxGestSex.pl sex_YBG.txt ps_YBG.txt YBG_filtered_lyc_wings.gl
 
 ## format and combine genoypte files
 formatGeno.R
-``
+```
+I took the wing pattern data from [Dryad](https://datadryad.org/dataset/doi:10.5061/dryad.fc827). I specifically used: resid-sizeANDcoord-15ix17-pops-NoNA.csv. 
 
+I then used the BSLMM from `gemma` (version 0.95a) for polygenic association mapping, which was the basis for estimting additive genetic variances by chromosome The MCMC invovled 20 chains for each of the 17 wing pattern area traits.
 
-I need to check what I have there against the trait data, which is on [Dryad](https://datadryad.org/dataset/doi:10.5061/dryad.fc827). I will need to call variants and will likely focus on mapping within a few of the better sampled populations or sets of populations (with limited structure). I could combine this with something (preliminary) looking at the location of known diapause genes (especially interesting if they are mostly on the Z) as these are generally well documented. This would use the new annotation from Sam. 
+```perl
+#!/usr/bin/perl
+#
+# fit gemma BSLMM for Lycaeides wings 
+#
+
+use Parallel::ForkManager;
+my $max = 48;
+my $pm = Parallel::ForkManager->new($max);
+
+$Nph = 17; ## 17 traits
+
+foreach $ph (1..$Nph){ 
+	foreach $ch (0..19){
+		sleep 2;
+		$pm->start and next;
+		$g = "../geno/GNP.geno";
+		$p = "../../traits/pheno_GNP.txt";
+		$o = "o_lyc_GNP_ph$ph"."_ch$ch";
+   		system "gemma -g $g -p $p -bslmm 1 -n $ph -o $o -maf 0 -w 500000 -s 1000000\n";
+		$g = "../geno/SIN.geno";
+		$p = "../../traits/pheno_SIN.txt";
+		$o = "o_lyc_SIN_ph$ph"."_ch$ch";
+   		system "gemma -g $g -p $p -bslmm 1 -n $ph -o $o -maf 0 -w 500000 -s 1000000\n";
+		$g = "../geno/YBG.geno";
+		$p = "../../traits/pheno_YBG.txt";
+		$o = "o_lyc_YBG_ph$ph"."_ch$ch";
+   		system "gemma -g $g -p $p -bslmm 1 -n $ph -o $o -maf 0 -w 500000 -s 1000000\n";
+		$pm->finish;
+	}
+}
+$pm->wait_all_children;
+```
+I summarized the posteriors as follows (see, [calpost.pl](calpost.pl), [grabMavEffects.pl](grabMavEffects.pl), and [grabPips.pl](grabPips.pl)):
+
+```bash
+#!/usr/bin/bash
+
+## summarize posteriors for hypers
+perl calpost.pl GNP o_lyc_GNP_ph*ch0.hyp.txt
+perl calpost.pl SIN o_lyc_SIN_ph*ch0.hyp.txt
+perl calpost.pl YBG o_lyc_YBG_ph*ch0.hyp.txt
+
+## model-averaged effects
+perl grabMavEffects.pl snps_GNP.txt o_lyc_GNP_ph*_ch0.param.txt
+perl grabMavEffects.pl snps_SIN.txt o_lyc_SIN_ph*_ch0.param.txt
+perl grabMavEffects.pl snps_YBG.txt o_lyc_YBG_ph*_ch0.param.txt
+
+## pips
+perl grabPips.pl snps_GNP.txt o_lyc_GNP_ph*_ch0.param.txt
+perl grabPips.pl snps_SIN.txt o_lyc_SIN_ph*_ch0.param.txt
+perl grabPips.pl snps_YBG.txt o_lyc_YBG_ph*_ch0.param.txt
+
+```
+I then computed additive genetic variances from model averaged effects and allele frequencies in R, see [mkWingPlot.R](mkWingPlot.R).
