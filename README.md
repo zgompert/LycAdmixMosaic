@@ -534,7 +534,7 @@ perl ../WinSubAlign.pl SubABMxSINxTBY.txt sub_max_chrom*
 perl RunWindows.pl
 ```
 
-After running [WinSubAlign.pl](WinSubAlign.pl) and [RunWindows.pl](RunWindows.pl), I summarize the results with [WinTest.R](WinTest.R). Here is what I have so far (all use SBW as the outgroup, 4th taxon):
+After running [WinSubAlign.pl](WinSubAlign.pl) and [RunWindows.pl](RunWindows.pl), I summarized the results with [WinTest.R](WinTest.R). Here are the sets I have ran (all use SBW as the outgroup, 4th taxon):
 
 | A | B | C | P(A+B) | P(A+C) | P(B+C) | Graph | Direcotry |
 |---|---|---|--------|--------|--------|-------|-----------|
@@ -562,4 +562,88 @@ After running [WinSubAlign.pl](WinSubAlign.pl) and [RunWindows.pl](RunWindows.pl
 
 # Phenotypic consequences of admixture
 
-I want to end by asking whether admixture matters for traits. One simple way to do this, especially given the different ancestries for Z for autosomes in many cases, is to ask whether traits map to both the autosomes and Z (and thus mixing these mixes autosomal and Z genetic variatns for traits). Wing pattern probably provides the best candidate for this. We mapped wing patterns before, see [Lucas et al. 2018](https://onlinelibrary.wiley.com/doi/abs/10.1111/1755-0998.12777). This was all done with the linkage-map version of the genome (pre HiC). I think the samples from this study (and others) have been aligned to the current *L. melissa* genome, i.e., the same one used for the pooled WGS data (the mapping data is all GBS). The files (bams) are here: `/uufs/chpc.utah.edu/common/home/gompert-group4/data/lycaeides/lycaeides_gbs/AssembliesGwa/`. There are 1895 bams, which is more than suggested by the 1113 (from 36 populations) suggested by the paper. I need to check what I have there against the trait data, which is on [Dryad](https://datadryad.org/dataset/doi:10.5061/dryad.fc827). I will need to call variants and will likely focus on mapping within a few of the better sampled populations or sets of populations (with limited structure). I could combine this with something (preliminary) looking at the location of known diapause genes (especially interesting if they are mostly on the Z) as these are generally well documented. This would use the new annotation from Sam. 
+I ended by asking whether admixture matters for traits. One simple way to do this, especially given the different ancestries for Z for autosomes in many cases, is to ask whether traits map to both the autosomes and Z (and thus mixing these mixes autosomal and Z genetic variatns for traits). Wing pattern probably provides the best candidate for this. We mapped wing patterns before, see [Lucas et al. 2018](https://onlinelibrary.wiley.com/doi/abs/10.1111/1755-0998.12777). This was all done with the linkage-map version of the genome (pre HiC). 
+
+I focused on the data from three populations, which have larger samples sizes, GNP (98), SIN (97), and YG (100); this is 295 samples (individuals) total. I aligned the fastq sequence files to the (HiC + PacBio) *L. melissa* genome with `bwa aln`:
+
+```perl
+#!/usr/bin/perl
+#
+# run bwa aln and samse 
+#
+# Program: bwa (alignment via Burrows-Wheeler transformation)
+#Version: 0.7.17-r1198-dirty
+
+
+use Parallel::ForkManager;
+my $max = 24;
+my $pm = Parallel::ForkManager->new($max);
+
+my $genome = "/uufs/chpc.utah.edu/common/home/gompert-group3/data/LmelGenome/Lmel_dovetailPacBio_genome.fasta";
+
+FILES:
+foreach $fq (@ARGV){
+	$pm->start and next FILES; ## fork
+        if ($fq =~ m/^([A-Z0-9\-]+)/){
+        	$ind = $1;
+    	}
+    	else {
+       		die "Failed to match $file\n";
+    	}
+	system "bwa aln -n 5 -l 20 -k 2 -t 1 -q 10 -f aln"."$ind".".sai $genome $fq\n";
+	system "bwa samse -n 1 -r \'\@RG\\tID:lyc-"."$ind\\tPL:ILLUMINA\\tLB:lyc-"."$ind\\tSM:lyc-"."$ind"."\' -f aln"."$ind".".sam $genome aln"."$ind".".sai $fq\n";
+	$pm->finish;
+}
+
+$pm->wait_all_children;
+```
+I then used `samtools` (1.16) to compress, sort and index the bam files:
+
+```perl
+#!/usr/bin/perl
+#
+# conver sam to bam, then sort and index 
+#
+
+
+use Parallel::ForkManager;
+my $max = 16;
+my $pm = Parallel::ForkManager->new($max);
+
+FILES:
+foreach $sam (@ARGV){
+	$pm->start and next FILES; ## fork
+	$sam =~ m/^([A-Za-z0-9_\-]+\.)sam/ or die "failed to match $sam\n";
+	$base = $1;
+	system "samtools view -b -O BAM -o $base"."bam $sam\n";
+        system "samtools sort -O BAM -o $base"."sorted.bam $base"."bam\n";
+        system "samtools index -b $base"."sorted.bam\n";
+        $pm->finish;
+}
+
+$pm->wait_all_children;
+```
+Next, I used `bcftools` (1.16) to call variants:
+
+```bash
+#SBATCH --time=48:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=16
+#SBATCH --account=gompert-kp
+#SBATCH --partition=gompert-kp
+#SBATCH --job-name=bcfvar
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+module load samtools
+## samtools 1.16
+module load bcftools
+## bcftools 1.16
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/WingMap/Genetics/aln
+
+bcftools mpileup -b bams -d 1000 -f /uufs/chpc.utah.edu/common/home/gompert-group3/data/LmelGenome/Lmel_dovetailPacBio_genome.fasta -a FORMAT/DP,FORMAT/AD -q 20 -Q 30 -I -Ou | bcftools call -v -c -P 0.001 -p 0.01 -Ov -o lycWings.vcf
+```
+
+
+I need to check what I have there against the trait data, which is on [Dryad](https://datadryad.org/dataset/doi:10.5061/dryad.fc827). I will need to call variants and will likely focus on mapping within a few of the better sampled populations or sets of populations (with limited structure). I could combine this with something (preliminary) looking at the location of known diapause genes (especially interesting if they are mostly on the Z) as these are generally well documented. This would use the new annotation from Sam. 
