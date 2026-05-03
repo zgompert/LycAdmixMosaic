@@ -849,3 +849,8 @@ perl grabPips.pl snps_YBG.txt o_lyc_YBG_ph*_ch0.param.txt
 
 ```
 I then computed additive genetic variances from model averaged effects and allele frequencies in R, see [mkWingPlot.R](mkWingPlot.R).
+
+
+# Popuation recombination rates
+
+I want to estimate $\rho = 4 N_e r$ to see whether this explains within chromosome variation in ancestry and signals for ILS. I have been trying to get ReLERNN to work for this, but I have not yet found a suitable GPU/install to make this reasibe (this would have allowed me to estimate $\rho$ from the poolseq data). So, I am trying another route. My plan is to use the GBS SNP data that I used for GWA mapping above to estiamte $\rho$ (starting from the estimated genotypes). I think I am going to use`pyrho` for this. 
