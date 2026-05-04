@@ -854,3 +854,24 @@ I then computed additive genetic variances from model averaged effects and allel
 # Popuation recombination rates
 
 I want to estimate $\rho = 4 N_e r$ to see whether this explains within chromosome variation in ancestry and signals for ILS. I have been trying to get ReLERNN to work for this, but I have not yet found a suitable GPU/install to make this reasibe (this would have allowed me to estimate $\rho$ from the poolseq data). So, I am trying another route. My plan is to use the GBS SNP data that I used for GWA mapping above to estiamte $\rho$ (starting from the estimated genotypes). I think I am going to use`pyrho` for this. 
+
+## Demographic inference for recombination rates
+
+`pyrho` benefits from a fit demographic model. I am using `moments` to estimate $N_e$ over time for GNP, SIN and YG. Specifically, I am comparing models with one, two or three epochs with distinct effective population sizes.
+
+I first split the filtered vcf file by population; this was done with `bcftools (version 1.23-3-g34a49760). 
+
+```bash
+ml bcftools
+
+## split by population, changed YBG to YG for pop ids manually
+cd /uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/WingMap/Genetics/vars
+
+head -n 10000 morefilter_filtered2x_lycWings.vcf | grep ^#C | perl -p -i -e 's/\s+/\n/g' | grep lyc | perl -p -i -e 's/(lyc\-)([A-Z]+)(\S+)/\1\2\3 - \2/' > gfile
+bcftools +split morefilter_filtered2x_lycWings.vcf -G gfile -o split
+```
+
+I then fit the demographic models. Here are the example scripts for GNP: [demog1Ne_moments.py](demog1Ne_moments.py), [demog2Ne_moments.py](demog2Ne_moments.py)
+, [demog3Ne_moments.py](demog3Ne_moments.py). The results are in `/uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/Recomb`. The two epoch models clearly outperform the one epoch models. There might be some marginal gain for three epoch, but often one epoch is very, very short and, in general, convergence looks less clear. I am leaning towards using the two-epoch results.
+
+
