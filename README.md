@@ -888,6 +888,46 @@ library(data.table)
 dat<-fread("depth.txt",header=FALSE)
 dm<-as.matrix(dat[,-c(1,2)])
 dp<-apply(dm,1,sum)
-
+miss<-apply(dm==0,1,sum)
+sum(dp > 590 & miss <=59)
+#[1] 1814781
 ```
+From this and the `moments` results I can compute $N_e$ for both epochs and the time of population change in generations.
 
+```R
+## compute parameters for pyrho
+
+## using number of loci from depth.txt (see github)
+L<-1814781
+mu<-2.9e-9
+
+theta_GNP<-1525.0946282392592
+nu_GNP<-27.08414848201902
+t_GNP<-2.8648244327426124
+
+theta_SIN<-2350.9882323817924
+nu_SIN<-15.418841729908975
+t_SIN<-1.6700638527850735
+
+theta_YG<-1877.541966271199
+nu_YG<-4.964677860126631
+t_YG<-0.852190861272184
+
+
+pconvert<-function(theta=NA,nu=NA,t=NA,Lx=L,mux=mu){
+        Nanc<-theta/(4*mux*Lx)
+        Ncur<-Nanc*nu
+        tgen<-t*2*Nanc
+        out<-c(Nanc,Ncur,tgen)
+        return(out)
+}       
+
+## order is ancestral Ne, current Ne, and time in generations/years
+## of the change
+pconvert(theta=theta_GNP,nu=nu_GNP,t=t_GNP)
+#[1]   72446.03 1962138.97  415090.30
+pconvert(theta=theta_SIN,nu=nu_SIN,t=t_SIN)
+#[1]  111678.2 1721947.8  373019.3
+pconvert(theta=theta_YG,nu=nu_YG,t=t_YG)
+#[1]  89188.21 442790.72 152010.75
+```
