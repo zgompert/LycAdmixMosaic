@@ -874,4 +874,11 @@ bcftools +split morefilter_filtered2x_lycWings.vcf -G gfile -o split
 I then fit the demographic models. Here are the example scripts for GNP: [demog1Ne_moments.py](demog1Ne_moments.py), [demog2Ne_moments.py](demog2Ne_moments.py)
 , [demog3Ne_moments.py](demog3Ne_moments.py). The results are in `/uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/Recomb`. The two epoch models clearly outperform the one epoch models. There might be some marginal gain for three epoch, but often one epoch is very, very short and, in general, convergence looks less clear. I am leaning towards using the two-epoch results.
 
+I need to conver the estiamtes from `moments` to $N_e$ and time in generations. I am going to use the *Heliconius* mutation rate (2.9e-9) but need the total across the effective number of loci. For this, I need to compute depth from the bam files (note the filtering for quality matches what I used for variant calling).
+
+```bash
+## using samtools 1.16
+
+samtools depth -q 20 -Q 30 --reference /uufs/chpc.utah.edu/common/home/gompert-group3/data/LmelGenome/Lmel_dovetailPacBio_genome.fasta --threads 4 *bam > depth.txt
+```
 
