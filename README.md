@@ -934,6 +934,62 @@ pconvert(theta=theta_YG,nu=nu_YG,t=t_YG)
 Getting ready for `pyrho`, I am creating male only vcf files, which will make the sample size a bit more tractable but also makes things equal for autosomes and Z (I don't want to have lower sample size for the Z, as that could introduce a bias). I also split out one vcf per chromosome.
 
 ```bash
-bcftools +split morefilter_filtered2x_lycWings.vcf -G gfile -o split_M
+bcftools +split morefilter_filtered2x_lycWings.vcf -G mlsgfile -o split_M
 
+## then
+perl SplitChroms.pl M_*vcf.gz
 ```
+which runs:
+
+```perl
+#!/usr/bin/perl
+#
+# split each vcf into one file per chromosome
+#
+
+## read in chromosome file first
+open(IN, "LgScaffoldNames.txt") or die;
+while(<IN>){
+	chomp;
+	@line = split(/\s+/,$_);
+	$ch{$line[0]} = $line[1];
+}
+close(IN);
+
+foreach $vcf (@ARGV){
+	foreach $a (keys %ch){
+		$out = $vcf;
+		$out =~ s/\.gz// or die;
+		$out = "ch$ch{$a}_$out";
+		system "bcftools view -r \"$a\" -o $out $vcf\n";
+	}
+}
+```
+
+Run pyrho, first step is to make one look-up table per population.
+
+```bash
+#!/bin/bash 
+#SBATCH --time=96:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=28
+#SBATCH --mem=700000
+#SBATCH --account=gompert-np
+#SBATCH --qos=gompert-np
+#SBATCH --partition=gompert-np
+#SBATCH --job-name=pyrho
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+ml miniforge3
+conda activate $HOME/conda-envs/pyrho
+which python
+python -c "import pyrho, numba, pandas; print('env OK')"
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/Recomb
+
+pyrho make_table --samplesize 104 --approx --moran_pop_size 104 --numthreads 24 --outfile table_GNP --popsizes 72446,1962139 --epochtimes 415090 --mu 2.9e-9
+pyrho make_table --samplesize 88 --approx --moran_pop_size 88 --numthreads 24 --outfile table_SIN --popsizes 111678,1721948 --epochtimes 373019 --mu 2.9e-9
+pyrho make_table --samplesize 100 --approx --moran_pop_size 100 --numthreads 24 --outfile table_YG --popsizes 89188,442791 --epochtimes 152011 --mu 2.9e-9
+```
+
