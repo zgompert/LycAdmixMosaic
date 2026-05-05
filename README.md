@@ -992,4 +992,31 @@ pyrho make_table --samplesize 104 --approx --moran_pop_size 104 --numthreads 24 
 pyrho make_table --samplesize 88 --approx --moran_pop_size 88 --numthreads 24 --outfile table_SIN --popsizes 111678,1721948 --epochtimes 373019 --mu 2.9e-9
 pyrho make_table --samplesize 100 --approx --moran_pop_size 100 --numthreads 24 --outfile table_YG --popsizes 89188,442791 --epochtimes 152011 --mu 2.9e-9
 ```
+Next, I optimized hyperparameters for pyrho.
 
+```basch
+#!/bin/bash 
+#SBATCH --time=96:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=28
+#SBATCH --mem=700000
+#SBATCH --account=gompert-np
+#SBATCH --qos=gompert-np
+#SBATCH --partition=gompert-np
+#SBATCH --job-name=pyrho
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+ml miniforge3
+conda activate $HOME/conda-envs/pyrho
+export PYTHONNOUSERSITE=1
+
+which python
+python -c "import pyrho, numba, pandas; print('env OK')"
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/Recomb
+
+pyrho hyperparam --samplesize 104 --tablefile table_GNP --popsizes 72446,1962139 --epochtimes 415090 --mu 2.9e-9 --ploidy 2 --outfile hyper_GNP
+pyrho hyperparam --samplesize 88 --tablefile table_SIN --popsizes 111678,1721948 --epochtimes 373019 --mu 2.9e-9 --ploidy 2 --outfile hyper_SIN
+pyrho hyperparam --samplesize 100 --tablefile table_YG --popsizes 89188,442791 --epochtimes 152011 --mu 2.9e-9 --ploidy 2 --outfile hyper_YG
+```
