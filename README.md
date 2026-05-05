@@ -881,4 +881,13 @@ I need to conver the estiamtes from `moments` to $N_e$ and time in generations. 
 
 samtools depth -q 20 -Q 30 --reference /uufs/chpc.utah.edu/common/home/gompert-group3/data/LmelGenome/Lmel_dovetailPacBio_genome.fasta --threads 4 *bam > depth.txt
 ```
+Then, in `R`:
+
+```r
+library(data.table)
+dat<-fread("depth.txt",header=FALSE)
+dm<-as.matrix(dat[,-c(1,2)])
+dp<-apply(dm,1,sum)
+
+```
 
