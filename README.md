@@ -931,3 +931,9 @@ pconvert(theta=theta_SIN,nu=nu_SIN,t=t_SIN)
 pconvert(theta=theta_YG,nu=nu_YG,t=t_YG)
 #[1]  89188.21 442790.72 152010.75
 ```
+Getting ready for `pyrho`, I am creating male only vcf files, which will make the sample size a bit more tractable but also makes things equal for autosomes and Z (I don't want to have lower sample size for the Z, as that could introduce a bias). I also split out one vcf per chromosome.
+
+```bash
+bcftools +split morefilter_filtered2x_lycWings.vcf -G gfile -o split_M
+
+```
