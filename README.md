@@ -853,9 +853,65 @@ I then computed additive genetic variances from model averaged effects and allel
 
 # Popuation recombination rates
 
-I want to estimate $\rho = 4 N_e r$ to see whether this explains within chromosome variation in ancestry and signals for ILS. I have been trying to get ReLERNN to work for this, but I have not yet found a suitable GPU/install to make this reasibe (this would have allowed me to estimate $\rho$ from the poolseq data). So, I am trying another route. My plan is to use the GBS SNP data that I used for GWA mapping above to estiamte $\rho$ (starting from the estimated genotypes). I think I am going to use`pyrho` for this. 
+I want to estimate $\rho = 4 N_e r$ to see whether this explains within chromosome variation in ancestry and signals for ILS. I tried several approaches for this. I started with `ReLERNN`, which can work with poolseq data, but I was unable to find or access a GPU that made the approriate level of training feasible. I then tried `pyrho` with GBS data, but was unhappy with that; I think the data were simply too sparse. I kept my notes on this below for other project, but am not using it here. In the end, I decided to use `iSMC` ([Barroso et al. 2019](https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1008449)). This works well with single, high-coverage genomes, which we have for *Lycaeides* (see [Chaturvedi et al. 2020](https://www.nature.com/articles/s41467-020-15641-x)). This includes representative genomes (all single females) from *L. anna* (Yuba Gap, CA), *L. idas* (Trout Lake, WY), *L. melissa* (Bonneville Shoreline Trail, UT), the Sierra Nevada (Carson Pass, NV), and Warner mountain (Buck Mountain, CA). Note that the final analyses do not include the Z chromosome, as females are heterogametic. This means my focus is on variation in recombination rates across the autosomes.  
 
-## Demographic inference for recombination rates
+## Demographic inference for recombination rates, WGS and iSCM
+
+The data are in `/uufs/chpc.utah.edu/common/home/gompert-group4/data/lycaeides/whole_genomes/sequences/`, the 180bp forward and reverse reads (see [Chaturvedi et al. 2020](https://www.nature.com/articles/s41467-020-15641-x)). I did all of the work in `/scratch/general/nfs1/u6000989/lyc_wgs` and will copy back key files and scripts.
+
+I aligned these to the same *L. melissa* genome used for everything else with `bwa-mem2`
+
+```bash
+#!/bin/sh
+#SBATCH --time=96:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=20
+#SBATCH --mem=200000
+#SBATCH --account=wolf-kp
+#SBATCH --partition=wolf-kp
+#SBATCH --job-name=bwa-mem2
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+module load samtools
+##Version: 1.16 (using htslib 1.16)
+
+cd /scratch/general/nfs1/u6000989/lyc_wgs
+
+perl BwaMemFork.pl *1.fastq.gz 
+```
+
+Which runs
+
+```perl
+#!/usr/bin/perl
+#
+# alignment with bwa mem 
+#
+
+
+use Parallel::ForkManager;
+my $max = 6;
+my $pm = Parallel::ForkManager->new($max);
+my $genome = "/uufs/chpc.utah.edu/common/home/gompert-group3/data/LmelGenome/Lmel_dovetailPacBio_genome.fasta";
+
+FILES:
+foreach $fq1 (@ARGV){
+	$pm->start and next FILES; ## fork
+	$fq2 = $fq1;
+	$fq2 =~ s/_1\.fastq\.gz/_2.fastq.gz/ or die "failed substitution for $fq1\n";
+        $fq1 =~ m/^([a-z]+)/ or die "failed to match id $fq1\n";
+	$ind = $1;
+        system "/uufs/chpc.utah.edu/common/home/u6000989/source/bwa-mem2-2.0pre2_x64-linux/bwa-mem2 mem -t 2 -k 19 -r 1.5 -R \'\@RG\\tID:Lyc-"."$ind\\tLB:Lyc-"."$ind\\tSM:Lyc-"."$ind"."\' $genome $fq1 $fq2 | samtools sort -@ 2 -O BAM -o $ind".".bam - && samtools index -@ 2 $ind".".bam\n";
+
+	$pm->finish;
+}
+
+$pm->wait_all_children;
+
+```
+
+## Demographic inference for recombination rates (with pyrho) NOT USED
 
 `pyrho` benefits from a fit demographic model. I am using `moments` to estimate $N_e$ over time for GNP, SIN and YG. Specifically, I am comparing models with one, two or three epochs with distinct effective population sizes.
 
