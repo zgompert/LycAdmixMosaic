@@ -910,6 +910,132 @@ foreach $fq1 (@ARGV){
 $pm->wait_all_children;
 
 ```
+Next, I used `samtools` (version 1.16) to mark and remove PCR duplicates:
+
+```bash
+#!/bin/sh
+#SBATCH --time=96:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=20
+#SBATCH --mem=200000
+#SBATCH --account=wolf-kp
+#SBATCH --partition=wolf-kp
+#SBATCH --job-name=samdup
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+module load samtools
+##Version: 1.16 (using htslib 1.16)
+
+cd /scratch/general/nfs1/u6000989/lyc_wgs
+
+perl RemoveDupsFork.pl *.bam 
+```
+Which runs:
+```perl
+#!/usr/bin/perl
+#
+# PCR duplicate removal with samtools
+#
+
+use Parallel::ForkManager;
+my $max = 8;
+my $pm = Parallel::ForkManager->new($max);
+
+FILES:
+foreach $bam (@ARGV){
+	$pm->start and next FILES; ## fork
+	$bam =~ m/^([A-Za-z0-9]+)/ or die "failed to match $bam\n";
+	$base = $1;
+	#system "samtools collate -o co_$base.bam $bam\n";
+	#system "samtools fixmate -m co_$base.bam fix_$base.bam\n";
+	system "samtools sort -o sort_$base.bam fix_$base.bam\n";
+	## using default definition of dups
+	## measure positions based on template start/end (default). = -m t
+	system "samtools markdup -r sort_$base.bam dedup_$base.bam\n";
+	$pm->finish;
+}
+
+$pm->wait_all_children;
+```
+I then called SNPs with `bcftools` (version 1.16):
+
+```bash
+#!/bin/sh
+#SBATCH --time=240:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=12
+#SBATCH --account=wolf-kp
+#SBATCH --partition=wolf-kp
+#SBATCH --job-name=bcf_call
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+
+module load samtools/1.16
+## version 1.16
+module load bcftools/1.16
+## version 1.16
+
+cd /scratch/general/nfs1/u6000989/lyc_wgs
+
+perl BcfCallFork.pl dedup*bam
+```
+This loops over individuals as each individual/genome is called seperately for this analysis.
+```perl
+#!/usr/bin/perl
+#
+# bcftools variant calling 
+#
+
+use Parallel::ForkManager;
+my $max = 8;
+my $pm = Parallel::ForkManager->new($max);
+
+my $genome ="/uufs/chpc.utah.edu/common/home/gompert-group3/data/LmelGenome/Lmel_dovetailPacBio_genome.fasta";
+
+
+
+
+foreach $bam (@ARGV){
+	$pm->start and next; ## fork
+	$out = "co_$bam";
+	$out =~ s/bam/vcf/ or die "failed $out\n";
+	system "bcftools mpileup -d 1000 -f $genome -a FORMAT/DP,FORMAT/AD -q 20 -Q 30 -I -Ou $bam | bcftools call -c -p 0.01 -Ov -o $out"."vcf\n";
+	$pm->finish;
+
+}
+
+$pm->wait_all_children;
+```
+Next, I dropped all non-chromosome scaffolds from the vcf files and renamed the scaffolds with the chromosome numbers, see [mkChromVcf.pl](mkChromVcf.pl). This creaates the *clean* vcf files. 
+
+I then filtered the vcf files to remove SNPs with depth less than 5.
+```bash
+#!/usr/bin/bash
+
+ml bcftools/1.16
+cd /scratch/general/nfs1/u6000989/lyc_wgs
+
+## remove depth < 5
+bcftools filter -O v -o filter_o_dedup_anna.vcf -e 'INFO/DP<5' clean_co_dedup_anna.vcf &
+bcftools filter -O v -o filter_o_dedup_idas.vcf -e 'INFO/DP<5' clean_co_dedup_idas.vcf &
+bcftools filter -O v -o filter_o_dedup_melissa.vcf -e 'INFO/DP<5' clean_co_dedup_melissa.vcf &
+bcftools filter -O v -o filter_o_dedup_sierra.vcf -e 'INFO/DP<5' clean_co_dedup_sierra.vcf &
+bcftools filter -O v -o filter_o_dedup_warner.vcf -e 'INFO/DP<5' clean_co_dedup_warner.vcf &
+```
+Finally, I dropped the Z chromosme (because the sequenced individuals were females = heterogametic).
+
+```bash
+#!/usr/bin/bash
+
+grep -v Ch23 filter_o_dedup_anna.vcf > filter_noZ_anna.vcf & 
+grep -v Ch23 filter_o_dedup_idas.vcf > filter_noZ_idas.vcf &
+grep -v Ch23 filter_o_dedup_melissa.vcf > filter_noZ_melissa.vcf &
+grep -v Ch23 filter_o_dedup_sierra.vcf > filter_noZ_sierra.vcf &
+grep -v Ch23 filter_o_dedup_warner.vcf> filter_noZ_warner.vcf &
+```
+
 
 ## Demographic inference for recombination rates (with pyrho) NOT USED
 
