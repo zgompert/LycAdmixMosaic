@@ -1,0 +1,12 @@
+dataset_label = anna_ismc
+input_file_type = gVCF 
+sequence_file_path = filter_noZ_anna.vcf
+tab_file_path = filter_noZ_anna.tab
+number_threads = 24
+optimize = true
+decode = true
+decode_breakpoints_parallel = false
+number_rho_categories = 5 
+number_intervals = 30
+function_tolerance = 1e-6
+fragment_size = 2000000

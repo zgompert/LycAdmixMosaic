@@ -1,0 +1,5 @@
+dataset_label = idas_ismc
+tab_file_path = filter_noZ_idas.tab
+bin_sizes = 25000,250000,1000000 
+bin_rate = rho 
+tmrca = true 
