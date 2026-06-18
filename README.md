@@ -1036,6 +1036,39 @@ grep -v Ch23 filter_o_dedup_sierra.vcf > filter_noZ_sierra.vcf &
 grep -v Ch23 filter_o_dedup_warner.vcf> filter_noZ_warner.vcf &
 ```
 
+I then used `iSMC` (version 1.0.0) to estimate population recombination rates from each filtered VCF file ([Barroso et al. 2019](https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1008449)). I assumed five $\rho$ categories and 30 intervals, consistent with default recommendations of \cite{barroso2019inference}. We estimated $\rho$ at three genomic scales using window sizes of 25 kbp, 250 kbp, and 1 Mbp. This involves a pair of commands, each of which is run on each genome/VCF. Here is an example:
+
+```bash
+#!/bin/bash 
+#SBATCH --time=240:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=24
+#SBATCH --mem=96000
+#SBATCH --account=gompert
+#SBATCH --qos=gompert-grn
+#SBATCH --partition=gompert-grn
+#SBATCH --job-name=iSMC
+#SBATCH --mail-type=FAIL
+
+
+cd /scratch/general/nfs1/u6000989/lyc_wgs
+
+ml miniforge3
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate ismc
+
+ml gcc/13.3.0
+
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$CONDA_PREFIX/lib64:$LD_LIBRARY_PATH"
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+
+ismc param=anna_ismc.bpp
+ismc_mapper param=anna_map.bpp
+```
+All of the details are in teh ismc and map files, which iare included in the repository.
+
+
+For each 25-kbp window, I then calculated a composite recombination-rate estimate as the average of the estimates for the corresponding 25-kbp, 250-kbp, and 1-Mbp regions containing that window. These estimates were then averaged across lineages and, where relevant, across entire chromosomes for downstream analyses. See [CalcMnRecomb.R](CalcMnRecomb.R) and [PlotRecomb.R](PlotRecomb.R).
 
 ## Demographic inference for recombination rates (with pyrho) NOT USED
 
