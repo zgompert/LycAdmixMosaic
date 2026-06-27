@@ -405,12 +405,12 @@ beast -prefix ch5 final_lyc_wgs_max_ranlc.xml
 beast -prefix ch6 final_lyc_wgs_max_ranlc.xml
 ```
 
-I then used `logcombiner` (version 2.7.5) to combine the trees and logs. I applied the 20% burnin to each chain at this stage and furtehr thinned the samples (mostly to reduce file sizes), such that log files containe every 5000th sample and treee files every 20,000th. The outfiles for the main analysis (RLC with BSP) are: combined_ranlc_bsp.log  (480,006 samples) and combined_ranlc_bsp.trees (120,006 trees). I used `tracer` (version 1.7) to then check the effective sample sizes, all were higher than 200, most were much higher.
+I then used `logcombiner` (version 2.7.5) to combine the trees and logs. I applied the 20% burnin to each chain at this stage and furtehr thinned the samples (mostly to reduce file sizes), such that log files containe every 5000th sample and treee files every 20,000th. The outfiles for the main analysis (RLC with BSP) are: final_combined_ranlc_bsp.log  (480,006 samples) and final_combined_ranlc_bsp.trees (120,006 trees). I used `tracer` (version 1.7) to then check the effective sample sizes, all were higher than 200, most were much higher.
 
 I use `treeannotator` to make the consensus tree (median heights), mctree.combined-wgs_max_ranlc_bsp.tre. I visualized the tree with:
 
 ```bash
-java -jar FigTree_v1.4.4/lib/figtree.jar mctree.combined-wgs_max_ranlc_bsp.tre. 
+java -jar FigTree_v1.4.4/lib/figtree.jar final_mctree.combined-wgs_max_ranlc_bsp.tre. 
 ```
 I saved tree  plots with time estimates and HPD estiamtes on these.
 
