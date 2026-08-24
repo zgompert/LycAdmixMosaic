@@ -32,22 +32,3 @@ for(j in 1:23){
 		}
 	}
 }
-
-
-
-## NEED TO UPDATE READ IN SNPS NUM
-## pve vs chromosome size (approx, based on number of snps), excluding Z
-## smaller chromosomes are better fit by bifurcating tree
-cor.test(snum[-23],pve[-23,1])
-#data:  snum[-23] and pve[-23, 1]
-#t = -3.2901, df = 20, p-value = 0.003658
-#alternative hypothesis: true correlation is not equal to 0
-#95 percent confidence interval:
-# -0.8114675 -0.2279422
-#sample estimates:
-#       cor
-#-0.5926004
-
-plot(snum[-23],pve[-23,1],pch=19)
-text(snum[-23],pve[-23,1],1:23)
-
