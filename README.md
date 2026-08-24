@@ -358,7 +358,7 @@ beauti
 
 Part of my approach involves entering the (approximate) number of invariant sites. For this, I am computing the total number of each base (A, C, G and T) in the genome, reducing this to 0.035 of the total (to acount for my subsampling) and subtracting of the SNPs. The current version doesn't use the final SNP set, so I will need to update this slightly. I get the counts (for the genome and SNP set) with [countBases.pl](countBases.pl).
 
-I then add the conts by appending "Orig" to the name, "lyc_genomemax' in the xml from `beauti`,  and adding the following just after the data (number of constant A, C, G and T):
+I then add the counts by appending "Orig" to the name, "lyc_genomemax' in the xml from `beauti`,  and adding the following just after the data (number of constant A, C, G and T):
 
 ```xml
     <data id='lyc_genomemax' spec='FilteredAlignment' filter='-' data='@lyc_genomemaxOrig' constantSiteWeights='50190 28322 28284 50114'>
@@ -367,7 +367,7 @@ I then add the conts by appending "Orig" to the name, "lyc_genomemax' in the xml
 
 I am using two sources for the calibration dates.
 
-1. [Vila et al. 2011](https://royalsocietypublishing.org/doi/full/10.1098/rspb.2010.2213) focuses on the colonization of the Americas by *Polyommatus* blues. This is older and has more limited data (a few mitochondrial and nuclear genes) but includes a good sample of old and new world *Lycaeides*. The date from [Vila et al. 2011](https://royalsocietypublishing.org/doi/full/10.1098/rspb.2010.2213) for node 9 (see supplment table 7 and figure 4) is good for calibrating the root. They present multiple estimates, I am using the mean of four esimates, from the first two table column:
+1. [Vila et al. 2011](https://royalsocietypublishing.org/doi/full/10.1098/rspb.2010.2213) focuses on the colonization of the Americas by *Polyommatus* blues. This is older and has more limited data (a few mitochondrial and nuclear genes) but includes a good sample of old and new world *Lycaeides*. The date from [Vila et al. 2011](https://royalsocietypublishing.org/doi/full/10.1098/rspb.2010.2213) for node 9 (see supplemental table 7 and figure 4) is good for calibrating the root. They present multiple estimates, I am using the mean of four estimates, from the first two table column:
 
 ```r
 sd(c(2.4,2.7,1.9,1.5))
@@ -497,7 +497,7 @@ $pm->wait_all_children;
 ```
 Importantly, this runs the full ML analysis 20 times for each set of conditions are retains the results with the highest likelihood out of the set of runs. In all cases, I set *P. argyrognomon* as the root (MEN12) and used 100 SNPs per block for estimation of the covariance matrix.
 
-Next, I summarized the results in R. 
+Next, I summarized the results in R. This includes models of the residual structure from the analyses. See the following scripts: [compareTrees.R](compareTrees.R), [PlotResids.R](PlotResids.R), [plotting_funcs.R](plotting_funcs.R), [PlotTmx.R](PlotTmx.R), [SubTreemixSnps.R](SubTreemixSnps.R), [summarizeSranTreemix.R](summarizeSranTreemix.R), and [summarizeTreemix.R](summarizeTreemix.R).
 
 
 # Examining genome-wide heterogeneity in relationships with Caster
