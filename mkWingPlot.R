@@ -6,7 +6,7 @@ for(i in 1:17){
     ff<-paste("mav_o_lyc_GNP_ph",i,"_ch0.param.txt",sep="")
     mav<-read.table(ff,header=FALSE)
     va<-2*pGNP[,1]*(1-pGNP[,1])*mav[,2]^2
-    sex<-grep(mav[,1],pattern="23:")
+    sex<-grep(mav[,1],pattern="23_")
     vaGNP[i,2]<-sum(va[sex])
     vaGNP[i,1]<-sum(va[-sex])
     nvaGNP[i,2]<-sum(va[sex])/sum(va)
@@ -21,7 +21,7 @@ for(i in 1:17){
     ff<-paste("mav_o_lyc_SIN_ph",i,"_ch0.param.txt",sep="")
     mav<-read.table(ff,header=FALSE)
     va<-2*pSIN[,1]*(1-pSIN[,1])*mav[,2]^2
-    sex<-grep(mav[,1],pattern="23:")
+    sex<-grep(mav[,1],pattern="23_")
     vaSIN[i,2]<-sum(va[sex])
     vaSIN[i,1]<-sum(va[-sex])
     nvaSIN[i,2]<-sum(va[sex])/sum(va)
@@ -36,7 +36,7 @@ for(i in 1:17){
     ff<-paste("mav_o_lyc_YBG_ph",i,"_ch0.param.txt",sep="")
     mav<-read.table(ff,header=FALSE)
     va<-2*pYBG[,1]*(1-pYBG[,1])*mav[,2]^2
-    sex<-grep(mav[,1],pattern="23:")
+    sex<-grep(mav[,1],pattern="23_")
     vaYBG[i,2]<-sum(va[sex])
     vaYBG[i,1]<-sum(va[-sex])
     nvaYBG[i,2]<-sum(va[sex])/sum(va)
@@ -146,18 +146,18 @@ dev.off()
 ## what about number of SNPs or chromosome sizes
 
 mean(nvaGNP[,2]>1/23)
-#[1] 0.8823529
+#[1] 0.5882353
 mean(nvaSIN[,2]>1/23)
-#[1] 0.8235294
+#[1] 0.4705882
 mean(nvaYBG[,2]>1/23)
-#[1] 0.7058824
+#[1] 0.4117647
 
 mean(nvaGNP[,2])/(1/23)
-#[1] 3.376278
+#[1] 2.048299
 mean(nvaSIN[,2])/(1/23)
-#[1] 1.458684
+#[1] 0.9644139
 mean(nvaYBG[,2])/(1/23)
-#[1] 1.993521
+#[1] 1.721813
 
 
 ## pve for si
@@ -165,7 +165,7 @@ pveGNP<-read.table("post_GNP.txt",header=FALSE)
 pveSIN<-read.table("post_SIN.txt",header=FALSE)
 pveYBG<-read.table("post_YBG.txt",header=FALSE)
 
-pdf("sfit_pve.pdf",width=8,height=7)
+pdf("sfig_pve.pdf",width=8,height=7)
 par(mfrow=c(1,3))
 par(mar=c(4.5,4,2.5,.5))
 cl<-1.4;ca<-1.1
