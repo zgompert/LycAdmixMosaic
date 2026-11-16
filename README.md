@@ -1129,6 +1129,55 @@ foreach $fq (@ARGV){
 
 $pm->wait_all_children;
 ```
+I then used `samtools` (version 1.16) to compress, sort and index the alignments:
+
+```bash
+#!/bin/bash
+#SBATCH --time=48:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=24
+#SBATCH --mem=100G
+#SBATCH --account=gompert-np
+#SBATCH --qos=gompert-np
+#SBATCH --partition=gompert-np
+#SBATCH --job-name=s2b
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+ml samtools/1.16 
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group4/data/lycaeides/melissa_mappingfams/aln_2026
+
+perl sam2bamFork.pl a*sam
+```
+
+which runs:
+
+```perl
+#!/usr/bin/perl
+#
+# conver sam to bam, then sort and index 
+#
+
+
+use Parallel::ForkManager;
+my $max = 16;
+my $pm = Parallel::ForkManager->new($max);
+
+FILES:
+foreach $sam (@ARGV){
+	$pm->start and next FILES; ## fork
+	$sam =~ m/^([a-z0-9]+\.)sam/ or die "failed to match $sam\n";
+	$base = $1;
+	system "samtools view -b -O BAM -o $base"."bam $sam\n";
+        system "samtools sort -O BAM -o $base"."sorted.bam $base"."bam\n";
+        system "samtools index -b $base"."sorted.bam\n";
+        $pm->finish;
+}
+
+$pm->wait_all_children;
+```
 
 ## Demographic inference for recombination rates (with pyrho) NOT USED
 
