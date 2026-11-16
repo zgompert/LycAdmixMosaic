@@ -1070,12 +1070,65 @@ For each 25-kbp window, I then calculated a composite recombination-rate estimat
 
 ## Recombination rate inference from crosses
 
-I am estimating recombination rates using GBS data from old crosses to complement the estimates of rho above. These are of course more limited in that they are based on specific mapping families but have the benefit fo being direct estimates of recombination that are not confounded by mutation. These data were first descrbed in [Lucas et al. 2018](https://onlinelibrary.wiley.com/doi/full/10.1111/1755-0998.12777); see the linkage map in the SI. I also have some notes about these data on the old online notebook, see, e.g., [ata from mapping family crosses](https://sites.google.com/site/gompertlabnotes/home/researcher-pages/zach-gompert/lycaeides/data-from-mapping-family-crosses). The data are here: `/uufs/chpc.utah.edu/common/home/gompert-group4/data/lycaeides/melissa_mappingfams/`. I have data from three families.
+I am estimating recombination rates using GBS data from old crosses to complement the estimates of rho above. These are of course more limited in that they are based on specific mapping families but have the benefit of being direct estimates of recombination that are not confounded by mutation. These data were first described in [Lucas et al. 2018](https://onlinelibrary.wiley.com/doi/full/10.1111/1755-0998.12777); see the linkage map in the SI. I also have some notes about these data on the old online notebook, see, e.g., [ata from mapping family crosses](https://sites.google.com/site/gompertlabnotes/home/researcher-pages/zach-gompert/lycaeides/data-from-mapping-family-crosses). The data are here: `/uufs/chpc.utah.edu/common/home/gompert-group4/data/lycaeides/melissa_mappingfams/`. I have data from three families.
 
-I first aligned these data to the *L. melissa* genome using the same approach as for the GBS data I used to estimate rho.
+I first aligned these data to the *L. melissa* genome using the same approach as for the GBS data used for GWA mapping of wing patters (see above). I used `bwa` (version ) for alignment:
+
+```bash
+#!/bin/bash
+#SBATCH --time=48:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=24
+#SBATCH --mem=100G
+#SBATCH --account=gompert-np
+#SBATCH --qos=gompert-np
+#SBATCH --partition=gompert-np
+#SBATCH --job-name=bwa
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+ml bwa
+#Version: 0.7.19-r1273
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group4/data/lycaeides/melissa_mappingfams/parsed
+
+perl BwaFork.pl m*fastq
+```
+
+Which runs:
+
+```perl
+#!/usr/bin/perl
+#
+# run bwa aln and samse 
+#
+# Program: bwa (alignment via Burrows-Wheeler transformation)
+#Version: 0.7.17-r1198-dirty
 
 
+use Parallel::ForkManager;
+my $max = 24;
+my $pm = Parallel::ForkManager->new($max);
 
+my $genome = "/uufs/chpc.utah.edu/common/home/gompert-group3/data/LmelGenome/Lmel_dovetailPacBio_genome.fasta";
+
+FILES:
+foreach $fq (@ARGV){
+	$pm->start and next FILES; ## fork
+        if ($fq =~ m/^([a-z0-9]+)/){
+        	$ind = $1;
+    	}
+    	else {
+       		die "Failed to match $file\n";
+    	}
+	system "bwa aln -n 5 -l 20 -k 2 -t 1 -q 10 -f aln"."$ind".".sai $genome $fq\n";
+	system "bwa samse -n 1 -r \'\@RG\\tID:lyc-"."$ind\\tPL:ILLUMINA\\tLB:lyc-"."$ind\\tSM:lyc-"."$ind"."\' -f aln"."$ind".".sam $genome aln"."$ind".".sai $fq\n";
+	$pm->finish;
+}
+
+$pm->wait_all_children;
+```
 
 ## Demographic inference for recombination rates (with pyrho) NOT USED
 
