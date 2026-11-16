@@ -1068,6 +1068,15 @@ All of the details are in teh ismc and map files, which iare included in the rep
 
 For each 25-kbp window, I then calculated a composite recombination-rate estimate as the average of the estimates for the corresponding 25-kbp, 250-kbp, and 1-Mbp regions containing that window. These estimates were then averaged across lineages and, where relevant, across entire chromosomes for downstream analyses. See [CalcMnRecomb.R](CalcMnRecomb.R) and [PlotRecomb.R](PlotRecomb.R).
 
+## Recombination rate inference from crosses
+
+I am estimating recombination rates using GBS data from old crosses to complement the estimates of rho above. These are of course more limited in that they are based on specific mapping families but have the benefit fo being direct estimates of recombination that are not confounded by mutation. These data were first descrbed in [Lucas et al. 2018](https://onlinelibrary.wiley.com/doi/full/10.1111/1755-0998.12777); see the linkage map in the SI. I also have some notes about these data on the old online notebook, see, e.g., [ata from mapping family crosses](https://sites.google.com/site/gompertlabnotes/home/researcher-pages/zach-gompert/lycaeides/data-from-mapping-family-crosses). The data are here: `/uufs/chpc.utah.edu/common/home/gompert-group4/data/lycaeides/melissa_mappingfams/`. I have data from three families.
+
+I first aligned these data to the *L. melissa* genome using the same approach as for the GBS data I used to estimate rho.
+
+
+
+
 ## Demographic inference for recombination rates (with pyrho) NOT USED
 
 `pyrho` benefits from a fit demographic model. I am using `moments` to estimate $N_e$ over time for GNP, SIN and YG. Specifically, I am comparing models with one, two or three epochs with distinct effective population sizes.
