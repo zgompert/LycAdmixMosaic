@@ -1178,6 +1178,29 @@ foreach $sam (@ARGV){
 
 $pm->wait_all_children;
 ```
+I then used `bcftools` (version 1.16) to call SNP variants:
+
+```bash
+#!/bin/bash
+#SBATCH --time=48:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=6
+#SBATCH --mem=100G
+#SBATCH --account=gompert-np
+#SBATCH --qos=gompert-np
+#SBATCH --partition=gompert-np
+#SBATCH --job-name=bcf
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+ml samtools/1.16
+ml bcftools/1.16
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group4/data/lycaeides/melissa_mappingfams/aln_2026
+
+bcftools mpileup -b bams -d 1000 -f /uufs/chpc.utah.edu/common/home/gompert-group3/data/LmelGenome/Lmel_dovetailPacBio_genome.fasta -a FORMAT/DP,FORMAT/AD -q 20 -Q 30 -I -Ou | bcftools call -v -c -P 0.001 -p 0.01 -Ov -o lyc_fams.vcf
+```
 
 ## Demographic inference for recombination rates (with pyrho) NOT USED
 
