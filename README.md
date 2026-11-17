@@ -1201,6 +1201,7 @@ cd /uufs/chpc.utah.edu/common/home/gompert-group4/data/lycaeides/melissa_mapping
 
 bcftools mpileup -b bams -d 1000 -f /uufs/chpc.utah.edu/common/home/gompert-group3/data/LmelGenome/Lmel_dovetailPacBio_genome.fasta -a FORMAT/DP,FORMAT/AD -q 20 -Q 30 -I -Ou | bcftools call -v -c -P 0.001 -p 0.01 -Ov -o lyc_fams.vcf
 ```
+I then filtered the vcf file; see [vcfFilterFams.pl](vcfFilterFams.pl) for details. From this, I retained 40,169 in filtered2x_lyc_fams.vcf. I moved this to `/uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/LepMap`.
 
 ## Demographic inference for recombination rates (with pyrho) NOT USED
 
