@@ -1228,6 +1228,49 @@ This left us with 38,589 SNPS and the following total individual counts per fami
 
 I then used coverage data to determine sex (ZZ or ZW), see [getSex.R](getSex.R)
 
+I then used lep-map3 to prepare the data. There are two main steps, one to extract the genotype likelihoods and one to filter the data.
+
+```bash
+#!/bin/sh
+#SBATCH --time=24:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=100G
+#SBATCH --account=gompert-np
+#SBATCH --partition=gompert-np
+#SBATCH --qos=gompert-np
+#SBATCH --job-name=lm3
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/LepMap
+
+java -cp ~/source/lm3/bin/ ParentCall2 vcfFile=mapping_lyc_fams.vcf data=pedigree.txt ZLimit=2 removeNonInformative=1 > lmdata.call
+
+java -cp ~/source/lm3/bin/ Filtering2 data=lmdata.call dataTolerance=0.01 removeNonInformative=1 > f_lmdata.call
+```
+After this, I created marker order files for each chromosome from the `f_lmdata.call` file (which includes the chromosome and position for each SNP). See [MkChromPosFiles.pl](MkChromPosFiles.pl).
+
+I then ran the `OrderMarkers2` module. This was done to simply estimate recombination and marker positions given the order the SNPs. I played a bit with options. The most important thing was setting the minimum error to 0.1 (in other words, regradless of the genotype likelihood, there is always at least a 10% chance the genotype is wrong). I did this to essentially account for other sources of error aside from those captured in the genotype likelihoods. I also tried 0.01 and got comparable results overall but with some likely map inflation and sometimes funny patterns at the ends of the chromosome. This was run with [RunMapEst.pl](RunMapEst.pl), the final version I used is below:
+
+```perl
+#!/usr/bin/perl
+#
+# run lepmap3 order module
+#
+
+foreach $ch (1..23){
+	print "Working on $ch\n";
+	$ord = "chr_$ch.physical_order.txt";
+	$map = "chr_$ch.map";
+	$log = "chr_$ch.log";
+	system "java -cp ~/source/lm3/bin/ OrderMarkers2 data=f_lmdata.call evaluateOrder=$ord improveOrder=0 recombination2=0 outputPhasedData=1 minError=0.1 proximityScale=100 \"scale=0.5M/N 2\" > $map 2> $log\n";
+
+}
+```
+I then estimated cM/Mb for each chromosome, plotted map position vs physical position and compared the estimates of recombination with rho. See [SummarizeMaps.R](SummarizeMaps.R), and also for the version with a minimum error rate of 0.01, see [SummarizeMaps_errpt01.R](SummarizeMaps_errpt01.R). The key take homes are that map length is mostly independent of size, so recombination rate scales negatively with size (as expected) and that the estimates (at the chromosome level) of r and rho are highly correlated. The mean chromosome map size was 43 cM (range 28-63) and the mean recombination rate was 2.1 cM/Mb (range 1.3-3.6). This all seems pretty reasonable and supports (at least at the chromosome level) the estiamtes of rho. My next step is to look a bit at within chromosome patterns.
+
 ## Demographic inference for recombination rates (with pyrho) NOT USED
 
 `pyrho` benefits from a fit demographic model. I am using `moments` to estimate $N_e$ over time for GNP, SIN and YG. Specifically, I am comparing models with one, two or three epochs with distinct effective population sizes.
