@@ -1203,7 +1203,7 @@ bcftools mpileup -b bams -d 1000 -f /uufs/chpc.utah.edu/common/home/gompert-grou
 ```
 I then filtered the vcf file; see [vcfFilterFams.pl](vcfFilterFams.pl) for details. From this, I retained 40,169 in filtered2x_lyc_fams.vcf. I moved this to `/uufs/chpc.utah.edu/common/home/gompert-group5/projects/LycAdmix/LepMap`.
 
-Next I dropped individuals there were not actual parents and offspring from families with uncertainty in the parents.
+Next I dropped individuals there were not actual parents and offspring from families with uncertainty in the parents, as well as SNPs not on the chromosome scaffolds.
 
 ```bash
 ml bcftools/1.16
@@ -1213,7 +1213,7 @@ bcftools view -S ^drop.txt -T chroms.txt -O v -o mapping_lyc_fams.vcf filtered2x
 ```
 The results are in mapping_ly_fams.vcf
 
-This left us with the following total individual counts per family (including parents), which is in the `pedigree.txt` file.
+This left us with 38,589 SNPS and the following total individual counts per family (including parents), which is in the `pedigree.txt` file.
 
 | N  | Faimly |
 |----|--------|
